@@ -20,6 +20,9 @@ public final class GuiTextures {
     public static final ResourceLocation SLOT_DECK = tex("card_slot_deck.png");
     public static final ResourceLocation SLOT_HOVER = tex("card_slot_hover.png");
     public static final ResourceLocation PILL = tex("button_pill.png");
+    public static final ResourceLocation PILL_CONFIRM = tex("button_confirm.png");
+    public static final ResourceLocation PILL_RESET = tex("button_reset.png");
+    public static final ResourceLocation PILL_CANCEL = tex("button_cancel.png");
     public static final ResourceLocation ICON_FOCUS = tex("icon_focus.png");
     public static final ResourceLocation ICON_GOOD_CONDITION = tex("icon_good_condition.png");
     public static final ResourceLocation ICON_GREAT_CONDITION = tex("icon_great_condition.png");

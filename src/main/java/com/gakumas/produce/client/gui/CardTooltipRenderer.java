@@ -17,11 +17,12 @@ public final class CardTooltipRenderer {
 
     private CardTooltipRenderer() {}
 
-    private static final int TITLE_COLOR = 0xFF3A3548;
-    private static final int GOLD_TAG_COLOR = 0xFFAF7F1E;
-    private static final int COST_COLOR = 0xFFB0473F;
-    private static final int DESC_COLOR = 0xFF4F6E8C;
-    private static final int PLEVEL_COLOR = 0xFF7A5AAF;
+    // ── 学マス再解釈カラーパレット ──
+    private static final int TITLE_COLOR = 0xFF2D2245;
+    private static final int GOLD_TAG_COLOR = 0xFFC49A35;
+    private static final int COST_COLOR = 0xFFC06050;
+    private static final int DESC_COLOR = 0xFF5A82A8;
+    private static final int PLEVEL_COLOR = 0xFF8570C0;
 
     private record Line(String text, int color, int iconColor) {}
 

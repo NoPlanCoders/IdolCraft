@@ -29,3 +29,4 @@ crash-reports/
 *.zip
 *.7z
 *.rar
+__pycache__/

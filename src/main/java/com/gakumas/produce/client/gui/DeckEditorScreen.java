@@ -33,7 +33,9 @@ public class DeckEditorScreen extends Screen {
     private static final ResourceLocation TEX_SLOT = GuiTextures.SLOT;
     private static final ResourceLocation TEX_SLOT_DECK = GuiTextures.SLOT_DECK;
     private static final ResourceLocation TEX_SLOT_HOVER = GuiTextures.SLOT_HOVER;
-    private static final ResourceLocation TEX_PILL = GuiTextures.PILL;
+    private static final ResourceLocation TEX_PILL_CONFIRM = GuiTextures.PILL_CONFIRM;
+    private static final ResourceLocation TEX_PILL_RESET = GuiTextures.PILL_RESET;
+    private static final ResourceLocation TEX_PILL_CANCEL = GuiTextures.PILL_CANCEL;
 
     // 実ファイルのピクセルサイズ（gen_gui_textures.py で SCALE=3 のもとに生成）
     private static final int TEXSIZE_PANEL_W = GuiTextures.PANEL_TEX_W;
@@ -53,9 +55,10 @@ public class DeckEditorScreen extends Screen {
     private static final int GRID_ROWS = 4;
     private static final int MAX_DECK_SIZE = 30;
 
-    private static final int GOLD_TEXT = 0xFF8B6B2E;
-    private static final int LABEL_TEXT = 0xFF5A5570;
-    private static final int CAPTION_TEXT = 0xFF9A93B0;
+    // ── 学マス再解釈カラーパレット ──
+    private static final int GOLD_TEXT = 0xFFD4A843;
+    private static final int LABEL_TEXT = 0xFF9A93B0;
+    private static final int CAPTION_TEXT = 0xFFB0A8C8;
 
     private final List<ResourceLocation> availableCards = new ArrayList<>();
     private final List<ResourceLocation> deckCards = new ArrayList<>();
@@ -75,7 +78,7 @@ public class DeckEditorScreen extends Screen {
     private int hoveredMouseY;
 
     /** 見た目だけの独自ピルボタン（バニラButtonの灰色スキンを使わず自前描画するための構造体） */
-    private record PillButton(int x, int y, int w, int h, String label, float r, float g, float b, Runnable action) {
+    private record PillButton(int x, int y, int w, int h, String label, ResourceLocation texture, Runnable action) {
         boolean isHovered(double mx, double my) {
             return mx >= x && mx < x + w && my >= y && my < y + h;
         }
@@ -115,11 +118,11 @@ public class DeckEditorScreen extends Screen {
 
         buttons.clear();
         buttons.add(new PillButton(centerX - btnW - btnW / 2 - gap, buttonY, btnW, btnH, "確定",
-                0.42f, 0.75f, 0.45f, this::confirmDeck));
+                TEX_PILL_CONFIRM, this::confirmDeck));
         buttons.add(new PillButton(centerX - btnW / 2, buttonY, btnW, btnH, "全削除",
-                0.62f, 0.60f, 0.66f, this::resetDeck));
+                TEX_PILL_RESET, this::resetDeck));
         buttons.add(new PillButton(centerX + btnW / 2 + gap, buttonY, btnW, btnH, "キャンセル",
-                0.88f, 0.45f, 0.50f, this::onClose));
+                TEX_PILL_CANCEL, this::onClose));
     }
 
     private void resetDeck() {
@@ -198,10 +201,10 @@ public class DeckEditorScreen extends Screen {
             pose.scale(scale, scale, 1f);
             pose.translate(-cx, -cy, 0);
 
-            float shade = hovered ? 1.05f : 0.92f;
-            RenderSystem.setShaderColor(btn.r() * shade, btn.g() * shade, btn.b() * shade, 1f);
-            GuiTextures.bindSmooth(TEX_PILL);
-            graphics.blit(TEX_PILL, btn.x(), btn.y(), btn.w(), btn.h(), 0f, 0f, TEXSIZE_PILL_W, TEXSIZE_PILL_H, TEXSIZE_PILL_W, TEXSIZE_PILL_H);
+            float shade = hovered ? 1.08f : 0.94f;
+            RenderSystem.setShaderColor(shade, shade, shade, 1f);
+            GuiTextures.bindSmooth(btn.texture());
+            graphics.blit(btn.texture(), btn.x(), btn.y(), btn.w(), btn.h(), 0f, 0f, TEXSIZE_PILL_W, TEXSIZE_PILL_H, TEXSIZE_PILL_W, TEXSIZE_PILL_H);
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
             int textWidth = this.font.width(btn.label());
