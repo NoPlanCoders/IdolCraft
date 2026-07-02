@@ -10,8 +10,8 @@ import java.util.List;
 
 /**
  * カード詳細ポップアップの共通描画。
- * 本家学マスの「カード詳細（丸みのある白パネル＋アイコン付き効果説明）」を参考にした見た目で、
- * デッキ編成画面・手札HUDの両方から呼び出せるようにしてある。
+ * 本家学マスの「カード詳細（丸みのある白パネル＋アイコン付き効果説明、下端にホバー対象を指す
+ * 吹き出しのしっぽ）」を参考にした見た目で、デッキ編成画面・手札HUDの両方から呼び出せるようにしてある。
  */
 public final class CardTooltipRenderer {
 
@@ -35,7 +35,11 @@ public final class CardTooltipRenderer {
         return new Line(text, color, iconColor);
     }
 
-    public static void render(GuiGraphics graphics, Font font, CardDefinition def, int mouseX, int mouseY, int screenWidth, int screenHeight) {
+    /**
+     * @param anchorX 吹き出しのしっぽが指す先（ホバー対象カードの中心付近）
+     * @param anchorY 吹き出しのしっぽが指す先
+     */
+    public static void render(GuiGraphics graphics, Font font, CardDefinition def, int anchorX, int anchorY, int screenWidth, int screenHeight) {
         List<Line> lines = new ArrayList<>();
         lines.add(line(def.getDisplayName(), TITLE_COLOR));
         if (def.getType() == CardType.ONCE_PER_LESSON) {
@@ -62,18 +66,26 @@ public final class CardTooltipRenderer {
             maxTextWidth = Math.max(maxTextWidth, w);
         }
         int contentW = Math.max(90, maxTextWidth + padding * 2);
-        int contentH = lines.size() * lineHeight + padding * 2 - 2;
+        int bodyH = lines.size() * lineHeight + padding * 2 - 2;
+        int totalH = Math.round(bodyH / GuiTextures.TOOLTIP_BODY_RATIO);
 
-        int x = mouseX + 12;
-        int y = mouseY - 8;
-        if (x + contentW > screenWidth) x = mouseX - contentW - 12;
-        if (y + contentH > screenHeight) y = screenHeight - contentH - 4;
-        if (y < 0) y = 4;
+        // しっぽの先端が anchor（ホバー対象の中心）を指すように、本体を anchor の真上に中央揃えで配置する
+        int x = anchorX - contentW / 2;
+        int y = anchorY - totalH - 4;
+        x = Math.max(2, Math.min(x, screenWidth - contentW - 2));
+        boolean flipBelow = y < 2;
+        if (flipBelow) {
+            // 画面上端に収まらない場合は下に表示する（この場合しっぽは見た目上は上を指さないが、
+            // パネル自体は視認できる位置を優先する）
+            y = anchorY + 12;
+        }
 
-        graphics.blit(GuiTextures.TOOLTIP_PANEL, x, y, contentW, contentH,
+        GuiTextures.bindSmooth(GuiTextures.TOOLTIP_PANEL);
+        graphics.blit(GuiTextures.TOOLTIP_PANEL, x, y, contentW, totalH,
                 0f, 0f, GuiTextures.TOOLTIP_PANEL_TEX_W, GuiTextures.TOOLTIP_PANEL_TEX_H,
                 GuiTextures.TOOLTIP_PANEL_TEX_W, GuiTextures.TOOLTIP_PANEL_TEX_H);
 
+        // テクスチャの本体（角丸矩形）は常に上側にあるため、しっぽの有無に関わらずテキストは常にyから開始する
         int ty = y + padding;
         for (Line l : lines) {
             int tx = x + padding;

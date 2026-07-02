@@ -172,6 +172,7 @@ public class DeckEditorScreen extends Screen {
 
     /** テクスチャ全体を (drawW x drawH) に拡縮して描画する。texW/texH は実ファイルのピクセルサイズ。 */
     private void blitTexture(GuiGraphics graphics, ResourceLocation texture, int x, int y, int drawW, int drawH, int texW, int texH) {
+        GuiTextures.bindSmooth(texture); // 角丸の縁を滑らかに（ニアレストネイバーによるジャギー対策）
         graphics.blit(texture, x, y, drawW, drawH, 0f, 0f, texW, texH, texW, texH);
     }
 
@@ -199,6 +200,7 @@ public class DeckEditorScreen extends Screen {
 
             float shade = hovered ? 1.05f : 0.92f;
             RenderSystem.setShaderColor(btn.r() * shade, btn.g() * shade, btn.b() * shade, 1f);
+            GuiTextures.bindSmooth(TEX_PILL);
             graphics.blit(TEX_PILL, btn.x(), btn.y(), btn.w(), btn.h(), 0f, 0f, TEXSIZE_PILL_W, TEXSIZE_PILL_H, TEXSIZE_PILL_W, TEXSIZE_PILL_H);
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
@@ -238,6 +240,7 @@ public class DeckEditorScreen extends Screen {
             }
 
             ResourceLocation bg = hovering ? TEX_SLOT_HOVER : slotTexture;
+            GuiTextures.bindSmooth(bg);
             graphics.blit(bg, x, y, innerSize, innerSize, 0f, 0f, TEXSIZE_SLOT, TEXSIZE_SLOT, TEXSIZE_SLOT, TEXSIZE_SLOT);
 
             if (index < list.size()) {

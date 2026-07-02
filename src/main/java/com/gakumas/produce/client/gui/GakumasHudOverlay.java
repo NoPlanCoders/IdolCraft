@@ -121,6 +121,7 @@ public class GakumasHudOverlay implements IGuiOverlay {
             }
 
             ResourceLocation slotTex = (i == selected) ? GuiTextures.SLOT_HOVER : GuiTextures.SLOT;
+            GuiTextures.bindSmooth(slotTex); // 角丸の縁を滑らかに（バフアイコンはドット絵なので対象外）
             graphics.blit(slotTex, x, y, SLOT_SIZE, SLOT_SIZE, 0f, 0f, SLOT_TEX, SLOT_TEX, SLOT_TEX, SLOT_TEX);
 
             Item item = ForgeRegistries.ITEMS.getValue(hand.get(i));
