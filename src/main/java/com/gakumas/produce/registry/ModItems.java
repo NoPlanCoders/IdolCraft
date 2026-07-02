@@ -31,6 +31,32 @@ public final class ModItems {
     public static final RegistryObject<Item> CARD_DIRECTION_PLAN = ITEMS.register("card_direction_plan",
             () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
 
+    // ---- 高性能カード ----
+    public static final RegistryObject<Item> CARD_SHOFU_HIKO = ITEMS.register("card_shofu_hiko",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_EXISTENCE = ITEMS.register("card_existence",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_FASCINATION = ITEMS.register("card_fascination",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_INNOCENCE = ITEMS.register("card_innocence",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_CALL_RESPONSE = ITEMS.register("card_call_response",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_EXCITE = ITEMS.register("card_excite",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+
+    // ---- センス基本カード / フリー基本カード ----
+    public static final RegistryObject<Item> CARD_STAGING_BASIC = ITEMS.register("card_staging_basic",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_STEP_BASIC = ITEMS.register("card_step_basic",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_PERFORMANCE_BASIC = ITEMS.register("card_performance_basic",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_REACTION_BASIC = ITEMS.register("card_reaction_basic",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> CARD_POSE_BASIC = ITEMS.register("card_pose_basic",
+            () -> new ProduceCardItem(new Item.Properties().stacksTo(1)));
+
     public static void register(net.minecraftforge.eventbus.api.IEventBus bus) {
         ITEMS.register(bus);
     }

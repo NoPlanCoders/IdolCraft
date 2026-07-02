@@ -24,5 +24,13 @@ public final class KeyBindings {
             CATEGORY
     );
 
+    public static final KeyMapping OPEN_DECK_EDITOR = new KeyMapping(
+            "key.gakumas_produce.open_deck_editor",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_D,
+            CATEGORY
+    );
+
     private KeyBindings() {}
 }

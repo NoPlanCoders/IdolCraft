@@ -19,6 +19,7 @@ public class DeckDataImpl implements IDeckData {
     private final List<ResourceLocation> masterCardList = new ArrayList<>();
     private int selectedIndex = 0;
     private boolean initialized = false;
+    private int pLevel = 0;
     private final BuffState buffState = new BuffState();
 
     @Override public List<ResourceLocation> getDrawPile() { return drawPile; }
@@ -43,6 +44,9 @@ public class DeckDataImpl implements IDeckData {
 
     @Override public boolean isInitialized() { return initialized; }
     @Override public void setInitialized(boolean initialized) { this.initialized = initialized; }
+
+    @Override public int getPLevel() { return pLevel; }
+    @Override public void setPLevel(int level) { this.pLevel = Math.max(0, level); }
 
     private static ListTag toListTag(List<ResourceLocation> list) {
         ListTag tag = new ListTag();
@@ -69,6 +73,7 @@ public class DeckDataImpl implements IDeckData {
         tag.put("master", toListTag(masterCardList));
         tag.putInt("selected", selectedIndex);
         tag.putBoolean("initialized", initialized);
+        tag.putInt("pLevel", pLevel);
         tag.put("buff", buffState.serializeNBT());
         return tag;
     }
@@ -82,6 +87,7 @@ public class DeckDataImpl implements IDeckData {
         masterCardList.clear(); masterCardList.addAll(fromListTag(tag.getList("master", Tag.TAG_STRING)));
         selectedIndex = tag.getInt("selected");
         initialized = tag.getBoolean("initialized");
+        pLevel = tag.getInt("pLevel");
         buffState.deserializeNBT(tag.getCompound("buff"));
     }
 }

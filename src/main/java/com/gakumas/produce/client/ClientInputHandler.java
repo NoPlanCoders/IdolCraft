@@ -21,6 +21,7 @@ public class ClientInputHandler {
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(KeyBindings.RESET_DECK);
         event.register(KeyBindings.SKIP_CARD);
+        event.register(KeyBindings.OPEN_DECK_EDITOR);
     }
 
     @Mod.EventBusSubscriber(modid = GakumasProduceMod.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -38,6 +39,12 @@ public class ClientInputHandler {
             while (KeyBindings.SKIP_CARD.consumeClick()) {
                 if (isHoldingHandbook()) {
                     NetworkHandler.CHANNEL.sendToServer(new UseOrSkipPacket(true));
+                }
+            }
+            while (KeyBindings.OPEN_DECK_EDITOR.consumeClick()) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player != null) {
+                    mc.setScreen(new com.gakumas.produce.client.gui.DeckEditorScreen());
                 }
             }
         }

@@ -1,11 +1,15 @@
 package com.gakumas.produce.registry;
 
 import com.gakumas.produce.GakumasProduceMod;
+import com.gakumas.produce.card.CardDefinition;
+import com.gakumas.produce.card.CardRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class ModCreativeTab {
@@ -19,12 +23,14 @@ public final class ModCreativeTab {
                     .icon(() -> new ItemStack(ModItems.PRODUCE_HANDBOOK.get()))
                     .displayItems((params, output) -> {
                         output.accept(ModItems.PRODUCE_HANDBOOK.get());
-                        output.accept(ModItems.CARD_APPEAL_BASIC.get());
-                        output.accept(ModItems.CARD_EXPRESSION_BASIC.get());
-                        output.accept(ModItems.CARD_BEHAVIOR_BASIC.get());
-                        output.accept(ModItems.CARD_EXPRESSION_FACE_BASIC.get());
-                        output.accept(ModItems.CARD_QUIET_WILL.get());
-                        output.accept(ModItems.CARD_DIRECTION_PLAN.get());
+                        // CardRegistry に登録された全カードを自動的にタブへ並べる。
+                        // 新カード追加時にここを書き換える必要がなくなる（拡張性重視）。
+                        for (CardDefinition def : CardRegistry.all()) {
+                            Item item = ForgeRegistries.ITEMS.getValue(def.getId());
+                            if (item != null) {
+                                output.accept(item);
+                            }
+                        }
                     })
                     .build());
 

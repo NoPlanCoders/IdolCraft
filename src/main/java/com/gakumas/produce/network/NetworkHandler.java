@@ -3,6 +3,7 @@ package com.gakumas.produce.network;
 import com.gakumas.produce.GakumasProduceMod;
 import com.gakumas.produce.network.packet.ResetDeckPacket;
 import com.gakumas.produce.network.packet.SelectCardPacket;
+import com.gakumas.produce.network.packet.SetDeckPacket;
 import com.gakumas.produce.network.packet.SyncDeckPacket;
 import com.gakumas.produce.network.packet.UseOrSkipPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -27,5 +28,6 @@ public final class NetworkHandler {
         CHANNEL.registerMessage(id++, UseOrSkipPacket.class, UseOrSkipPacket::encode, UseOrSkipPacket::decode, UseOrSkipPacket::handle);
         CHANNEL.registerMessage(id++, ResetDeckPacket.class, ResetDeckPacket::encode, ResetDeckPacket::decode, ResetDeckPacket::handle);
         CHANNEL.registerMessage(id++, SyncDeckPacket.class, SyncDeckPacket::encode, SyncDeckPacket::decode, SyncDeckPacket::handle);
+        CHANNEL.registerMessage(id++, SetDeckPacket.class, SetDeckPacket::encode, SetDeckPacket::decode, SetDeckPacket::handle);
     }
 }

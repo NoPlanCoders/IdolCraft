@@ -126,6 +126,15 @@ public final class DeckService {
                     );
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
+                // プロデューサーランク（Pレベル）チェック
+                if (def.getRequiredPLevel() > 0 && deck.getPLevel() < def.getRequiredPLevel()) {
+                    player.displayClientMessage(
+                            Component.literal("まだプロデューサーランクが足りない！（必要Lv." + def.getRequiredPLevel() + "）")
+                                    .withStyle(ChatFormatting.RED),
+                            true
+                    );
+                    return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
+                }
                 // コスト（体力）チェック・消費
                 if (def.getHpCost() > 0) {
                     GenkiHelper.consumeCost(player, def.getHpCost());
@@ -138,19 +147,39 @@ public final class DeckService {
                     GenkiHelper.addGenki(player, 2f);
                 }
 
-                // 使用済みカードの行き先: Lカードは捨て札、Oカードは除外
+                // 使用済みカードの行き先: 通常カードは捨て札へ、レッスン中1回カードは除外へ
                 deck.getHand().remove(idx);
-                if (def.getType() == CardType.L_CARD) {
+                if (def.getType() == CardType.NORMAL) {
                     deck.getDiscardPile().add(cardId);
                 } else {
                     deck.getExclusionPile().add(cardId);
                 }
+
+                // 「シュプレヒコール」等：スキルカード追加使用ボーナス。
+                // ボーナス残があり、かつ残り手札がまだあるなら、ターンを終えずに続けて選択させる。
+                if (deck.getBuffState().getBonusActions() > 0 && !deck.getHand().isEmpty()) {
+                    deck.getBuffState().consumeBonusAction();
+                    deck.setSelectedIndex(0);
+                    player.displayClientMessage(
+                            Component.literal("【スキルカード追加使用！】").withStyle(ChatFormatting.YELLOW),
+                            true
+                    );
+                    return; // 捨て札送り・新規ドローを行わず、同じ手札から続けて選べる状態を維持する
+                }
             }
         }
+
+        // ボーナスはターンをまたいで持ち越さない
+        deck.getBuffState().clearBonusActions();
 
         // 使わなかった残りの手札もすべて捨て札へ（★学マス重要仕様）
         deck.getDiscardPile().addAll(deck.getHand());
         deck.getHand().clear();
+
+        // 「天真爛漫」等の汎用パッシブ：ターン終了時、集中が3以上ならさらに集中+2
+        if (deck.getBuffState().hasPassiveFlag("focus_per_turn") && deck.getBuffState().getFocusStacks() >= 3) {
+            deck.getBuffState().addFocus(2);
+        }
 
         // 山札から新たに3枚ドロー
         drawCards(deck, HAND_SIZE);

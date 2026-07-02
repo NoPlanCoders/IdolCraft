@@ -1,0 +1,20 @@
+{
+  "parent": "gakumas_produce:rank/upper",
+  "display": {
+    "icon": { "item": "minecraft:netherite_scrap" },
+    "title": { "translate": "advancements.gakumas_produce.rank.plv_24.title" },
+    "description": { "translate": "advancements.gakumas_produce.rank.plv_24.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "got_netherite_scrap": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [ { "items": [ "minecraft:netherite_scrap" ] } ]
+      }
+    }
+  }
+}

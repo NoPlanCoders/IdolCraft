@@ -1,0 +1,19 @@
+{
+  "display": {
+    "icon": { "item": "minecraft:iron_ingot" },
+    "title": { "translate": "advancements.gakumas_produce.rank.plv_6.title" },
+    "description": { "translate": "advancements.gakumas_produce.rank.plv_6.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "got_iron": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [ { "items": [ "minecraft:iron_ingot" ] } ]
+      }
+    }
+  }
+}

@@ -36,13 +36,18 @@ public class ProduceCardItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         getDefinition().ifPresent(def -> {
-            tooltip.add(Component.literal(def.getType() == CardType.L_CARD ? "[Lカード]" : "[Oカード]")
-                    .withStyle(def.getType() == CardType.L_CARD ? ChatFormatting.GRAY : ChatFormatting.GOLD));
+            // 本家同様、通常カードには特にタグを付けず、「レッスン中1回」カードのみ明示する
+            if (def.getType() == CardType.ONCE_PER_LESSON) {
+                tooltip.add(Component.literal("レッスン中1回").withStyle(ChatFormatting.GOLD));
+            }
             if (def.getHpCost() > 0) {
                 tooltip.add(Component.literal("消費体力: " + def.getHpCost()).withStyle(ChatFormatting.RED));
             }
             if (def.getRequiredAdvancement() != null) {
                 tooltip.add(Component.literal("必要プロデューサーランクあり").withStyle(ChatFormatting.LIGHT_PURPLE));
+            }
+            if (def.getRequiredPLevel() > 0) {
+                tooltip.add(Component.literal("必要Pレベル: " + def.getRequiredPLevel()).withStyle(ChatFormatting.LIGHT_PURPLE));
             }
         });
     }

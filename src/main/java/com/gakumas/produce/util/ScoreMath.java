@@ -18,16 +18,25 @@ public final class ScoreMath {
     private ScoreMath() {}
 
     public static int calculateDamage(int baseScore, BuffState buff) {
-        int raw = baseScore + buff.getFocusStacks();
+        return (int) Math.ceil(applyBuffs(baseScore, buff));
+    }
 
-        double multiplier = 1.0;
+    public static float calculateOutgoingDamage(float baseDamage, BuffState buff) {
+        return (float) Math.ceil(applyBuffs(baseDamage, buff));
+    }
+
+    private static double applyBuffs(double baseValue, BuffState buff) {
+        double raw = baseValue + buff.getFocusStacks();
+        return raw * getDamageMultiplier(buff);
+    }
+
+    private static double getDamageMultiplier(BuffState buff) {
         if (buff.isGoodConditionActive()) {
             if (buff.isGreatConditionActive()) {
-                multiplier = 1.0 + 0.5 + 0.1 * buff.getGoodConditionTurnsAccumulated();
-            } else {
-                multiplier = 1.5;
+                return 1.0 + 0.5 + 0.1 * buff.getGoodConditionTurnsAccumulated();
             }
+            return 1.5;
         }
-        return (int) Math.ceil(raw * multiplier);
+        return 1.0;
     }
 }

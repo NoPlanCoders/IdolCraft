@@ -27,7 +27,10 @@ public class PlayerTickHandler {
             // 手帳を所持している間のみ、5Tickに1回HUD用に同期する（毎Tick送ると負荷が高いため）
             boolean holdingHandbook = serverPlayer.getMainHandItem().getItem() instanceof HandbookItem
                     || serverPlayer.getOffhandItem().getItem() instanceof HandbookItem;
-            if (holdingHandbook && serverPlayer.tickCount % 5 == 0) {
+            boolean hasVisibleBuff = deck.getBuffState().getFocusStacks() > 0
+                    || deck.getBuffState().isGoodConditionActive()
+                    || deck.getBuffState().isGreatConditionActive();
+            if ((holdingHandbook || hasVisibleBuff) && serverPlayer.tickCount % 5 == 0) {
                 SyncHelper.syncTo(serverPlayer, deck);
             }
         });

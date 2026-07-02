@@ -1,4 +1,5 @@
 {
+  "parent": "gakumas_produce:rank/plv_11",
   "display": {
     "icon": { "item": "minecraft:nether_star" },
     "title": { "translate": "advancements.gakumas_produce.rank.upper.title" },

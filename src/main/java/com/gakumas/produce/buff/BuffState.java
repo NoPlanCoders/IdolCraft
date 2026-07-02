@@ -95,6 +95,31 @@ public class BuffState {
         customCounters.put(key, value);
     }
 
+    /** 「スキルカード使用数追加」用カウンタキー。ターンを終えず続けてもう1枚使えるボーナスの残数。 */
+    private static final String BONUS_ACTION_KEY = "bonus_actions";
+
+    public int getBonusActions() {
+        return getCustomCounter(BONUS_ACTION_KEY);
+    }
+
+    /** 「シュプレヒコール」等：このカード使用後、ターンを終えずもう1枚使用できるボーナスを加算する */
+    public void addBonusAction(int amount) {
+        setCustomCounter(BONUS_ACTION_KEY, Math.max(0, getBonusActions() + amount));
+    }
+
+    /** ボーナスを1消費する（残数が無ければ何もしない） */
+    public void consumeBonusAction() {
+        int current = getBonusActions();
+        if (current > 0) {
+            setCustomCounter(BONUS_ACTION_KEY, current - 1);
+        }
+    }
+
+    /** ターンをまたいでボーナスを持ち越さないようにするためのクリア処理 */
+    public void clearBonusActions() {
+        setCustomCounter(BONUS_ACTION_KEY, 0);
+    }
+
     /**
      * 毎Tick呼び出される時間経過処理。好調・絶好調をリアルタイムで減少させる。
      * 集中は減らさない（本家仕様通り、リセットまで永続）。

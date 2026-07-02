@@ -17,6 +17,7 @@ public class SyncDeckPacket {
     private final int focusStacks;
     private final int goodTicks;
     private final int greatTicks;
+    private final int pLevel;
 
     public SyncDeckPacket(IDeckData deck) {
         this.hand = new ArrayList<>(deck.getHand());
@@ -24,14 +25,16 @@ public class SyncDeckPacket {
         this.focusStacks = deck.getBuffState().getFocusStacks();
         this.goodTicks = deck.getBuffState().getGoodConditionTicks();
         this.greatTicks = deck.getBuffState().getGreatConditionTicks();
+        this.pLevel = deck.getPLevel();
     }
 
-    private SyncDeckPacket(List<ResourceLocation> hand, int selectedIndex, int focusStacks, int goodTicks, int greatTicks) {
+    private SyncDeckPacket(List<ResourceLocation> hand, int selectedIndex, int focusStacks, int goodTicks, int greatTicks, int pLevel) {
         this.hand = hand;
         this.selectedIndex = selectedIndex;
         this.focusStacks = focusStacks;
         this.goodTicks = goodTicks;
         this.greatTicks = greatTicks;
+        this.pLevel = pLevel;
     }
 
     public static void encode(SyncDeckPacket msg, FriendlyByteBuf buf) {
@@ -41,6 +44,7 @@ public class SyncDeckPacket {
         buf.writeVarInt(msg.focusStacks);
         buf.writeVarInt(msg.goodTicks);
         buf.writeVarInt(msg.greatTicks);
+        buf.writeVarInt(msg.pLevel);
     }
 
     public static SyncDeckPacket decode(FriendlyByteBuf buf) {
@@ -51,13 +55,14 @@ public class SyncDeckPacket {
         int focus = buf.readVarInt();
         int good = buf.readVarInt();
         int great = buf.readVarInt();
-        return new SyncDeckPacket(hand, selected, focus, good, great);
+        int pLevel = buf.readVarInt();
+        return new SyncDeckPacket(hand, selected, focus, good, great, pLevel);
     }
 
     public static void handle(SyncDeckPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
                 net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        com.gakumas.produce.client.ClientDeckState.update(msg.hand, msg.selectedIndex, msg.focusStacks, msg.goodTicks, msg.greatTicks)
+                        com.gakumas.produce.client.ClientDeckState.update(msg.hand, msg.selectedIndex, msg.focusStacks, msg.goodTicks, msg.greatTicks, msg.pLevel)
                 )
         );
         ctx.get().setPacketHandled(true);

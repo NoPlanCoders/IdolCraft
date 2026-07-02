@@ -34,6 +34,13 @@ public interface IDeckData {
     boolean isInitialized();
     void setInitialized(boolean initialized);
 
+    /**
+     * プロデューサーランク（Pレベル）。デッキリセットやバフリセットでは変化しない、
+     * プレイヤーの長期的な進捗値。この値によって使用可能なカードの種類が増えていく。
+     */
+    int getPLevel();
+    void setPLevel(int level);
+
     CompoundTag serializeNBT();
     void deserializeNBT(CompoundTag tag);
 }
