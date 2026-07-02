@@ -1,0 +1,43 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = '1.0.0'
+group = 'com.gakumas.produce'
+base {
+    archivesName = 'gakumas_produce'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods { gakumas_produce { source sourceSets.main } }
+        }
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods { gakumas_produce { source sourceSets.main } }
+        }
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
+}
+
+// 注意: 本プロジェクトはネットワーク制限のあるサンドボックス環境で作成されたため、
+// 実際に `./gradlew build` を実行するには、開発者自身のPC上に
+// 公式Forge 1.20.1 MDK(または本build.gradle)を配置し、Forgeの依存関係を
+// ダウンロードできるネットワーク環境で実行してください。
