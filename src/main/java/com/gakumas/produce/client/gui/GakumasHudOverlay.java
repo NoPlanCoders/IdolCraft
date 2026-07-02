@@ -25,6 +25,8 @@ public class GakumasHudOverlay implements IGuiOverlay {
 
     private static final int SLOT_SIZE = 32;
     private static final int SLOT_TEX = GuiTextures.SLOT_TEX;
+    /** card_slot系テクスチャの余白（影のにじみ用マージン）が全体サイズに占める比率。gen_gui_textures.py: margin=48, 合計=312 */
+    private static final float SLOT_MARGIN_RATIO = 48f / 312f;
 
     @Override
     public void render(net.minecraftforge.client.gui.overlay.ForgeGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
@@ -130,9 +132,12 @@ public class GakumasHudOverlay implements IGuiOverlay {
                 graphics.renderItemDecorations(mc.font, stack, iconX, iconY);
             }
 
-            // 今使用できないカードは、スロットごと薄暗くして一目で分かるようにする（本家準拠）
+            // 今使用できないカードは薄暗くする。テクスチャは影のにじみ分の余白を含むため、
+            // 矩形オーバーレイをそのまま全面にかけると見た目の丸いカード枠からはみ出してズレて見える。
+            // 余白比率（margin/合計サイズ）ぶんだけ内側に縮めて、実際に見えているカード枠に合わせる。
             if (!ClientDeckState.isHandUsable(i)) {
-                graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xB0101018);
+                int inset = Math.round(SLOT_SIZE * SLOT_MARGIN_RATIO);
+                graphics.fill(x + inset, y + inset, x + SLOT_SIZE - inset, y + SLOT_SIZE - inset, 0xB0101018);
             }
 
             pose.popPose();

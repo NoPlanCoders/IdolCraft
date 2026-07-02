@@ -118,32 +118,17 @@ public final class DeckService {
             if (def == null) {
                 skip = true;
             } else {
-                // プロデューサーランク（進捗）チェック
+                // プロデューサーランク（進捗）チェック。手札上で減光表示されるため、テキストでは重ねて説明しない。
                 if (def.getRequiredAdvancement() != null && !AdvancementHelper.hasAdvancement(player, def.getRequiredAdvancement())) {
-                    player.displayClientMessage(
-                            Component.literal("まだプロデューサーランクが足りない！").withStyle(ChatFormatting.RED),
-                            true
-                    );
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
                 // プロデューサーランク（Pレベル）チェック
                 if (def.getRequiredPLevel() > 0 && deck.getPLevel() < def.getRequiredPLevel()) {
-                    player.displayClientMessage(
-                            Component.literal("まだプロデューサーランクが足りない！（必要Lv." + def.getRequiredPLevel() + "）")
-                                    .withStyle(ChatFormatting.RED),
-                            true
-                    );
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
                 // 使用条件チェック（例：「集中が3以上の場合、使用可」）。
-                // 満たさない場合は黙って不発にせず、選択そのものをキャンセルしてメッセージを出す。
+                // 満たさない場合は黙って不発にせず、選択そのものをキャンセルする（不発ではなく無選択扱い）。
                 if (!def.getUsability().canUse(player, deck)) {
-                    String hint = def.getUsabilityHint();
-                    player.displayClientMessage(
-                            Component.literal("今は使用できない！" + (hint.isEmpty() ? "" : "（" + hint + "）"))
-                                    .withStyle(ChatFormatting.RED),
-                            true
-                    );
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
                 // コスト（体力）チェック・消費

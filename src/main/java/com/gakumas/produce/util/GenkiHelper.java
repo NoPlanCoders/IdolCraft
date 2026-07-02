@@ -20,20 +20,17 @@ public final class GenkiHelper {
     }
 
     /**
-     * コストを消費する。まず元気(Absorption)から減らし、足りない分は体力から直接減らす。
-     * @return 実際に消費できたかどうか（体力が0以下になる場合でも強制的に消費し、あとの処理側でダウン扱いにするかは呼び出し側次第）
+     * コストを消費する。バニラの{@link ServerPlayer#hurt}を使うことで、
+     * 元気(Absorption)の優先消費・体力減少・0以下になった場合の正規の死亡処理
+     * （LivingDeathEvent発火、アイテムドロップ等）をすべてMinecraft標準の仕組みに任せる。
+     * 直接 setHealth() していた旧実装は死亡パイプラインを迂回してしまい、
+     * コストで力尽きた際にアイテムがドロップしない不具合の原因になっていたため修正した。
      */
     public static void consumeCost(ServerPlayer player, float cost) {
         if (cost <= 0) return;
-        float genki = player.getAbsorptionAmount();
-        if (genki >= cost) {
-            player.setAbsorptionAmount(genki - cost);
-            return;
-        }
-        float remainder = cost - genki;
-        player.setAbsorptionAmount(0f);
-        float newHealth = Math.max(0f, player.getHealth() - remainder);
-        player.setHealth(newHealth);
+        // コストは「無敵時間」で無効化されるべきではないため、直前にリセットしてから確実にダメージを通す
+        player.invulnerableTime = 0;
+        player.hurt(player.level().damageSources().magic(), cost);
     }
 
     /** コストを支払えるか（元気+体力の合計が足りているか。体力は最低1残す仕様にはしていないので0まで許容） */
