@@ -7,7 +7,6 @@ import com.gakumas.produce.capability.DeckCapability;
 import com.gakumas.produce.network.NetworkHandler;
 import com.gakumas.produce.network.packet.SetDeckPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -272,27 +271,8 @@ public class DeckEditorScreen extends Screen {
     }
 
     private void renderCardTooltip(GuiGraphics graphics, ResourceLocation cardId, int mouseX, int mouseY) {
-        CardRegistry.get(cardId).ifPresent(def -> {
-            List<Component> lines = new ArrayList<>();
-            lines.add(Component.literal(def.getDisplayName()).withStyle(ChatFormatting.WHITE));
-            // 本家同様、通常カードには特にタグを付けず、「レッスン中1回」カードのみ明示する
-            if (def.getType() == CardType.ONCE_PER_LESSON) {
-                lines.add(Component.literal("レッスン中1回").withStyle(ChatFormatting.GOLD));
-            }
-            if (def.getHpCost() > 0) {
-                lines.add(Component.literal("消費体力: " + def.getHpCost()).withStyle(ChatFormatting.RED));
-            }
-            if (!def.getDescription().isEmpty()) {
-                lines.add(Component.literal(def.getDescription()).withStyle(ChatFormatting.AQUA));
-            }
-            if (def.getRequiredAdvancement() != null) {
-                lines.add(Component.literal("必要プロデューサーランクあり").withStyle(ChatFormatting.LIGHT_PURPLE));
-            }
-            if (def.getRequiredPLevel() > 0) {
-                lines.add(Component.literal("必要Pレベル: " + def.getRequiredPLevel()).withStyle(ChatFormatting.LIGHT_PURPLE));
-            }
-            graphics.renderComponentTooltip(this.font, lines, mouseX, mouseY);
-        });
+        CardRegistry.get(cardId).ifPresent(def ->
+                CardTooltipRenderer.render(graphics, this.font, def, mouseX, mouseY, this.width, this.height));
     }
 
     @Override
