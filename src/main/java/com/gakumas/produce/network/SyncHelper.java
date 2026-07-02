@@ -9,6 +9,6 @@ public final class SyncHelper {
     private SyncHelper() {}
 
     public static void syncTo(ServerPlayer player, IDeckData deck) {
-        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncDeckPacket(deck));
+        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncDeckPacket(player, deck));
     }
 }

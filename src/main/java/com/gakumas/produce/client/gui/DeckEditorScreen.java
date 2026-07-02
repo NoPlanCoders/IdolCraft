@@ -176,10 +176,29 @@ public class DeckEditorScreen extends Screen {
         graphics.blit(texture, x, y, drawW, drawH, 0f, 0f, texW, texH, texW, texH);
     }
 
+    /** 呼吸するようにゆっくり明滅する 0.0〜1.0 の値（時間ベース、フレームレートに依存しない） */
+    private static float breathe(float speed) {
+        return 0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() / 1000.0 * speed);
+    }
+
     private void renderButtons(GuiGraphics graphics, int mouseX, int mouseY) {
-        for (PillButton btn : buttons) {
+        // 「確定」ボタンだけ常にゆっくり呼吸するように拡縮させ、押したくなる主役感を出す
+        float pulse = 1.0f + 0.035f * breathe(2.2f);
+
+        for (int i = 0; i < buttons.size(); i++) {
+            PillButton btn = buttons.get(i);
             boolean hovered = btn.isHovered(mouseX, mouseY);
-            float shade = hovered ? 1.0f : 0.9f;
+            float scale = hovered ? 1.08f : (i == 0 ? pulse : 1.0f);
+
+            var pose = graphics.pose();
+            pose.pushPose();
+            float cx = btn.x() + btn.w() / 2f;
+            float cy = btn.y() + btn.h() / 2f;
+            pose.translate(cx, cy, 0);
+            pose.scale(scale, scale, 1f);
+            pose.translate(-cx, -cy, 0);
+
+            float shade = hovered ? 1.05f : 0.92f;
             RenderSystem.setShaderColor(btn.r() * shade, btn.g() * shade, btn.b() * shade, 1f);
             graphics.blit(TEX_PILL, btn.x(), btn.y(), btn.w(), btn.h(), 0f, 0f, TEXSIZE_PILL_W, TEXSIZE_PILL_H, TEXSIZE_PILL_W, TEXSIZE_PILL_H);
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
@@ -188,6 +207,8 @@ public class DeckEditorScreen extends Screen {
             graphics.drawString(this.font, btn.label(),
                     btn.x() + btn.w() / 2 - textWidth / 2, btn.y() + btn.h() / 2 - 4,
                     0xFFFFFFFF, true);
+
+            pose.popPose();
         }
     }
 
@@ -202,27 +223,51 @@ public class DeckEditorScreen extends Screen {
             int row = slot / GRID_COLS;
             int x = gridX + col * SLOT_SIZE;
             int y = gridY + row * SLOT_SIZE;
+            int innerSize = SLOT_SIZE - 2;
 
-            boolean hovering = mouseX >= x && mouseX < x + SLOT_SIZE - 2 && mouseY >= y && mouseY < y + SLOT_SIZE - 2;
-            ResourceLocation bg = hovering ? TEX_SLOT_HOVER : slotTexture;
-            graphics.blit(bg, x, y, SLOT_SIZE - 2, SLOT_SIZE - 2, 0f, 0f, TEXSIZE_SLOT, TEXSIZE_SLOT, TEXSIZE_SLOT, TEXSIZE_SLOT);
+            boolean hovering = mouseX >= x && mouseX < x + innerSize && mouseY >= y && mouseY < y + innerSize;
 
-            if (index >= list.size()) continue;
-
-            ResourceLocation cardId = list.get(index);
-            Item item = ForgeRegistries.ITEMS.getValue(cardId);
-            if (item == null) continue;
-
-            ItemStack stack = new ItemStack(item);
             var pose = graphics.pose();
             pose.pushPose();
-            pose.translate(x + (SLOT_SIZE - 2) / 2f - 8, y + (SLOT_SIZE - 2) / 2f - 8, 0);
-            graphics.renderItem(stack, 0, 0);
-            pose.popPose();
-
             if (hovering) {
-                hoveredCard = cardId;
+                // ホバー時にスロットごとポップアップ拡大させ、選べる手応え（動き）を出す
+                float cx = x + innerSize / 2f;
+                float cy = y + innerSize / 2f;
+                pose.translate(cx, cy, 0);
+                pose.scale(1.14f, 1.14f, 1f);
+                pose.translate(-cx, -cy, 0);
             }
+
+            ResourceLocation bg = hovering ? TEX_SLOT_HOVER : slotTexture;
+            graphics.blit(bg, x, y, innerSize, innerSize, 0f, 0f, TEXSIZE_SLOT, TEXSIZE_SLOT, TEXSIZE_SLOT, TEXSIZE_SLOT);
+
+            if (index < list.size()) {
+                ResourceLocation cardId = list.get(index);
+                Item item = ForgeRegistries.ITEMS.getValue(cardId);
+                if (item != null) {
+                    ItemStack stack = new ItemStack(item);
+                    var itemPose = graphics.pose();
+                    itemPose.pushPose();
+                    itemPose.translate(x + innerSize / 2f - 8, y + innerSize / 2f - 8, 0);
+                    graphics.renderItem(stack, 0, 0);
+                    itemPose.popPose();
+
+                    // 本家同様「色分けで重要度を一目で分かるように」：レッスン中1回カードには金色マーカーを付ける
+                    CardRegistry.get(cardId).ifPresent(def -> {
+                        if (def.getType() == CardType.ONCE_PER_LESSON) {
+                            int mx = x + innerSize - 6;
+                            int my = y + 2;
+                            graphics.fill(mx, my, mx + 5, my + 5, 0xFFE8C97A);
+                        }
+                    });
+
+                    if (hovering) {
+                        hoveredCard = cardId;
+                    }
+                }
+            }
+
+            pose.popPose();
         }
     }
 

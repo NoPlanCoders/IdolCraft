@@ -86,74 +86,75 @@ public final class ProduceCards {
                 .build());
 
         // 6. 演出計画 (レッスン中1回): 【要:Pレベル20】コスト体力4。絶好調3ターン(15秒)付与。
-        //    さらにデッキリセットまでの間、カード使用毎に固定で元気+2されるパッシブを付与。
+        //    さらにデッキリセットまでの間、カード使用毎に元気+2されるパッシブを付与。
+        //    ※スタック式なので、デッキに複数枚入れて重複使用すればその分だけ効果が重複発動する。
         CardRegistry.register(CardDefinition.builder(id("card_direction_plan"), "演出計画", CardType.ONCE_PER_LESSON)
-                .description("絶好調3ターン付与、以後カード使用毎に元気+2")
+                .description("絶好調3ターン付与、以後カード使用毎に元気+2（重複使用でさらに加算）")
                 .hpCost(4)
                 .requiredPLevel(20)
                 .effect((player, deck) -> {
                     deck.getBuffState().addGreatCondition(3 * DeckService.TICKS_PER_TURN);
-                    deck.getBuffState().setPassiveFlag("encore_genki_on_use", true);
+                    BuffState buff = deck.getBuffState();
+                    buff.setCustomCounter("encore_genki_stacks", buff.getCustomCounter("encore_genki_stacks") + 1);
                 })
                 .build());
 
         // 7. シュプレヒコール (通常 / 金): 集中消費3、パラメータ+6、好調2ターン付与、追加でもう1枚使用可。
         //    ※本家の「消費体力減少」は本Modでは未実装のため簡略化している。
         CardRegistry.register(CardDefinition.builder(id("card_shofu_hiko"), "シュプレヒコール", CardType.NORMAL)
-                .description("集中3消費、ダメージ+6、好調2ターン付与、追加でもう1枚使用可（集中3以上必要）")
+                .description("集中3消費、ダメージ+6、好調2ターン付与、追加でもう1枚使用可")
                 .hpCost(0)
                 .baseScore(6)
+                .usableWhen((player, deck) -> deck.getBuffState().getFocusStacks() >= 3, "集中3以上が必要")
                 .effect((player, deck) -> {
                     BuffState buff = deck.getBuffState();
-                    if (buff.getFocusStacks() >= 3) {
-                        buff.addFocus(-3);
-                        LivingEntity target = TargetingHelper.getLookTarget(player);
-                        if (target != null) {
-                            target.hurt(player.level().damageSources().magic(), ScoreMath.calculateDamage(6, buff));
-                        }
-                        buff.addGoodCondition(2 * DeckService.TICKS_PER_TURN, 2);
-                        buff.addBonusAction(1);
+                    buff.addFocus(-3);
+                    LivingEntity target = TargetingHelper.getLookTarget(player);
+                    if (target != null) {
+                        target.hurt(player.level().damageSources().magic(), ScoreMath.calculateDamage(6, buff));
                     }
+                    buff.addGoodCondition(2 * DeckService.TICKS_PER_TURN, 2);
+                    buff.addBonusAction(1);
                 })
                 .build());
 
         // 8. 存在感 (通常 / 金): 好調を2ターン分消費し、集中+4、追加でもう1枚使用可。
         CardRegistry.register(CardDefinition.builder(id("card_existence"), "存在感", CardType.NORMAL)
-                .description("好調2ターン消費、集中+4、追加でもう1枚使用可（好調が必要）")
+                .description("好調2ターン消費、集中+4、追加でもう1枚使用可")
                 .hpCost(0)
+                .usableWhen((player, deck) -> deck.getBuffState().isGoodConditionActive(), "好調が必要")
                 .effect((player, deck) -> {
                     BuffState buff = deck.getBuffState();
-                    if (buff.isGoodConditionActive()) {
-                        int consumeTicks = Math.min(buff.getGoodConditionTicks(), 2 * DeckService.TICKS_PER_TURN);
-                        buff.addGoodCondition(-consumeTicks, 0);
-                        buff.addFocus(4);
-                        buff.addBonusAction(1);
-                    }
+                    int consumeTicks = Math.min(buff.getGoodConditionTicks(), 2 * DeckService.TICKS_PER_TURN);
+                    buff.addGoodCondition(-consumeTicks, 0);
+                    buff.addFocus(4);
+                    buff.addBonusAction(1);
                 })
                 .build());
 
         // 9. 魅惑の視線 (レッスン中1回 / 虹): 集中消費3、絶好調4ターン付与、追加でもう1枚使用可。
         //    ※本家の「消費体力減少」は本Modでは未実装のため簡略化している。
         CardRegistry.register(CardDefinition.builder(id("card_fascination"), "魅惑の視線", CardType.ONCE_PER_LESSON)
-                .description("集中3消費、絶好調4ターン付与、追加でもう1枚使用可（集中3以上必要）")
+                .description("集中3消費、絶好調4ターン付与、追加でもう1枚使用可")
                 .hpCost(0)
+                .usableWhen((player, deck) -> deck.getBuffState().getFocusStacks() >= 3, "集中3以上が必要")
                 .effect((player, deck) -> {
                     BuffState buff = deck.getBuffState();
-                    if (buff.getFocusStacks() >= 3) {
-                        buff.addFocus(-3);
-                        buff.addGreatCondition(4 * DeckService.TICKS_PER_TURN);
-                        buff.addBonusAction(1);
-                    }
+                    buff.addFocus(-3);
+                    buff.addGreatCondition(4 * DeckService.TICKS_PER_TURN);
+                    buff.addBonusAction(1);
                 })
                 .build());
 
         // 10. 天真爛漫 (レッスン中1回 / 虹): コスト体力6。集中+1。以後ターン終了時、集中3以上なら集中+2。
+        // ※スタック式なので、デッキに複数枚入れて重複使用すればその分だけ効果が重複発動する。
         CardRegistry.register(CardDefinition.builder(id("card_innocence"), "天真爛漫", CardType.ONCE_PER_LESSON)
-                .description("集中+1、以後ターン終了時に集中3以上なら集中+2")
+                .description("集中+1、以後ターン終了時に集中3以上なら集中+2（重複使用でさらに加算）")
                 .hpCost(6)
                 .effect((player, deck) -> {
                     deck.getBuffState().addFocus(1);
-                    deck.getBuffState().setPassiveFlag("focus_per_turn", true);
+                    BuffState buff = deck.getBuffState();
+                    buff.setCustomCounter("focus_per_turn_stacks", buff.getCustomCounter("focus_per_turn_stacks") + 1);
                 })
                 .build());
 
@@ -191,16 +192,15 @@ public final class ProduceCards {
 
         // 13. ステージングの基本 (通常 / センス): コスト体力2。パラメータ+10（好調中のみ使用可）。
         CardRegistry.register(CardDefinition.builder(id("card_staging_basic"), "ステージングの基本", CardType.NORMAL)
-                .description("ダメージ+10（好調2ターン以上で使用可）")
+                .description("ダメージ+10")
                 .hpCost(2)
                 .baseScore(10)
+                .usableWhen((player, deck) -> deck.getBuffState().getGoodConditionTurnsAccumulated() >= 2, "好調2ターン以上が必要")
                 .effect((player, deck) -> {
                     BuffState buff = deck.getBuffState();
-                    if (buff.getGoodConditionTurnsAccumulated() >= 2) {
-                        LivingEntity target = TargetingHelper.getLookTarget(player);
-                        if (target != null) {
-                            target.hurt(player.level().damageSources().magic(), ScoreMath.calculateDamage(10, buff));
-                        }
+                    LivingEntity target = TargetingHelper.getLookTarget(player);
+                    if (target != null) {
+                        target.hurt(player.level().damageSources().magic(), ScoreMath.calculateDamage(10, buff));
                     }
                 })
                 .build());
@@ -237,18 +237,17 @@ public final class ProduceCards {
 
         // 16. リアクションの基本 (通常 / センス): コスト体力2。パラメータ+5を2回（集中3以上で使用可）。
         CardRegistry.register(CardDefinition.builder(id("card_reaction_basic"), "リアクションの基本", CardType.NORMAL)
-                .description("ダメージ+5を2回（集中3以上で使用可）")
+                .description("ダメージ+5を2回")
                 .hpCost(2)
                 .baseScore(10)
+                .usableWhen((player, deck) -> deck.getBuffState().getFocusStacks() >= 3, "集中3以上が必要")
                 .effect((player, deck) -> {
                     BuffState buff = deck.getBuffState();
-                    if (buff.getFocusStacks() >= 3) {
-                        LivingEntity target = TargetingHelper.getLookTarget(player);
-                        if (target != null) {
-                            var src = player.level().damageSources().magic();
-                            target.hurt(src, ScoreMath.calculateDamage(5, buff));
-                            target.hurt(src, ScoreMath.calculateDamage(5, buff));
-                        }
+                    LivingEntity target = TargetingHelper.getLookTarget(player);
+                    if (target != null) {
+                        var src = player.level().damageSources().magic();
+                        target.hurt(src, ScoreMath.calculateDamage(5, buff));
+                        target.hurt(src, ScoreMath.calculateDamage(5, buff));
                     }
                 })
                 .build());

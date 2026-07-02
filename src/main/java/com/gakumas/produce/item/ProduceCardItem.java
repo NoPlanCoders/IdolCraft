@@ -49,6 +49,7 @@ public class ProduceCardItem extends Item {
             if (def.getRequiredPLevel() > 0) {
                 tooltip.add(Component.literal("必要Pレベル: " + def.getRequiredPLevel()).withStyle(ChatFormatting.LIGHT_PURPLE));
             }
+            // 使用条件を満たさない場合は手札上で減光表示されるため、ここではテキストで重ねて説明しない
         });
     }
 }

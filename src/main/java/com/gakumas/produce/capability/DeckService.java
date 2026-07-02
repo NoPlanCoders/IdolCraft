@@ -135,6 +135,17 @@ public final class DeckService {
                     );
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
+                // 使用条件チェック（例：「集中が3以上の場合、使用可」）。
+                // 満たさない場合は黙って不発にせず、選択そのものをキャンセルしてメッセージを出す。
+                if (!def.getUsability().canUse(player, deck)) {
+                    String hint = def.getUsabilityHint();
+                    player.displayClientMessage(
+                            Component.literal("今は使用できない！" + (hint.isEmpty() ? "" : "（" + hint + "）"))
+                                    .withStyle(ChatFormatting.RED),
+                            true
+                    );
+                    return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
+                }
                 // コスト（体力）チェック・消費
                 if (def.getHpCost() > 0) {
                     GenkiHelper.consumeCost(player, def.getHpCost());
@@ -142,9 +153,11 @@ public final class DeckService {
                 // 効果発動
                 def.getEffect().apply(player, deck);
 
-                // 「演出計画」等の汎用パッシブ：カード使用のたびに固定で元気+2
-                if (deck.getBuffState().hasPassiveFlag("encore_genki_on_use")) {
-                    GenkiHelper.addGenki(player, 2f);
+                // 「演出計画」等の汎用パッシブ：カード使用のたびに元気+2 × スタック数
+                // （同じ効果を持つカードを重複して使った場合、その分だけ効果が重複発動するようスタックで管理する）
+                int encoreStacks = deck.getBuffState().getCustomCounter("encore_genki_stacks");
+                if (encoreStacks > 0) {
+                    GenkiHelper.addGenki(player, 2f * encoreStacks);
                 }
 
                 // 使用済みカードの行き先: 通常カードは捨て札へ、レッスン中1回カードは除外へ
@@ -176,9 +189,10 @@ public final class DeckService {
         deck.getDiscardPile().addAll(deck.getHand());
         deck.getHand().clear();
 
-        // 「天真爛漫」等の汎用パッシブ：ターン終了時、集中が3以上ならさらに集中+2
-        if (deck.getBuffState().hasPassiveFlag("focus_per_turn") && deck.getBuffState().getFocusStacks() >= 3) {
-            deck.getBuffState().addFocus(2);
+        // 「天真爛漫」等の汎用パッシブ：ターン終了時、集中が3以上ならさらに集中+2 × スタック数
+        int focusPerTurnStacks = deck.getBuffState().getCustomCounter("focus_per_turn_stacks");
+        if (focusPerTurnStacks > 0 && deck.getBuffState().getFocusStacks() >= 3) {
+            deck.getBuffState().addFocus(2 * focusPerTurnStacks);
         }
 
         // 山札から新たに3枚ドロー
@@ -189,5 +203,19 @@ public final class DeckService {
     public static void changeSelection(IDeckData deck, int delta) {
         if (deck.getHand().isEmpty()) return;
         deck.setSelectedIndex(deck.getSelectedIndex() + delta);
+    }
+
+    /**
+     * 今このタイミングでカードを選択・発動できるかどうかを判定する（進捗・Pレベル・個別使用条件をすべて含む）。
+     * {@link #performAction} 内の各チェックと同じ条件を、UI側の減光表示用に単一のbooleanとして提供する。
+     */
+    public static boolean isUsable(ServerPlayer player, IDeckData deck, CardDefinition def) {
+        if (def.getRequiredAdvancement() != null && !AdvancementHelper.hasAdvancement(player, def.getRequiredAdvancement())) {
+            return false;
+        }
+        if (def.getRequiredPLevel() > 0 && deck.getPLevel() < def.getRequiredPLevel()) {
+            return false;
+        }
+        return def.getUsability().canUse(player, deck);
     }
 }

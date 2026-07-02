@@ -16,6 +16,7 @@ import java.util.List;
 public final class ClientDeckState {
 
     private static List<ResourceLocation> hand = Collections.emptyList();
+    private static List<Boolean> handUsable = Collections.emptyList();
     private static int selectedIndex = 0;
     private static int focusStacks = 0;
     private static int goodTicks = 0;
@@ -24,8 +25,9 @@ public final class ClientDeckState {
 
     private ClientDeckState() {}
 
-    public static void update(List<ResourceLocation> newHand, int selected, int focus, int good, int great, int level) {
+    public static void update(List<ResourceLocation> newHand, List<Boolean> newHandUsable, int selected, int focus, int good, int great, int level) {
         hand = newHand;
+        handUsable = newHandUsable;
         selectedIndex = selected;
         focusStacks = focus;
         goodTicks = good;
@@ -40,6 +42,12 @@ public final class ClientDeckState {
     }
 
     public static List<ResourceLocation> getHand() { return hand; }
+
+    /** 指定した手札インデックスのカードが「今この瞬間」選択・発動できるか（進捗/Pレベル/使用条件込み） */
+    public static boolean isHandUsable(int index) {
+        return index < 0 || index >= handUsable.size() || handUsable.get(index);
+    }
+
     public static int getSelectedIndex() { return selectedIndex; }
     public static int getFocusStacks() { return focusStacks; }
     public static int getGoodTicks() { return goodTicks; }

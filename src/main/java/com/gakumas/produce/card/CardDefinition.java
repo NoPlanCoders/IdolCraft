@@ -27,6 +27,10 @@ public class CardDefinition {
     private final int requiredPLevel;
     /** デッキ初期化時のドローで必ず初期手札に含める（「静かな意志」のような初手確定カード） */
     private final boolean guaranteedFirstDraw;
+    /** 「集中が3以上の場合、使用可」等の使用条件。満たさない場合は発動そのものをキャンセルする */
+    private final CardUsability usability;
+    /** 使用条件を満たしていない時にプレイヤーへ表示する説明文（ツールチップ・エラーメッセージ両方で使う） */
+    private final String usabilityHint;
     private final CardEffect effect;
 
     private CardDefinition(Builder b) {
@@ -39,6 +43,8 @@ public class CardDefinition {
         this.requiredAdvancement = b.requiredAdvancement;
         this.requiredPLevel = b.requiredPLevel;
         this.guaranteedFirstDraw = b.guaranteedFirstDraw;
+        this.usability = b.usability;
+        this.usabilityHint = b.usabilityHint;
         this.effect = b.effect;
     }
 
@@ -52,6 +58,8 @@ public class CardDefinition {
     public ResourceLocation getRequiredAdvancement() { return requiredAdvancement; }
     public int getRequiredPLevel() { return requiredPLevel; }
     public boolean isGuaranteedFirstDraw() { return guaranteedFirstDraw; }
+    public CardUsability getUsability() { return usability; }
+    public String getUsabilityHint() { return usabilityHint; }
     public CardEffect getEffect() { return effect; }
 
     public static Builder builder(ResourceLocation id, String displayName, CardType type) {
@@ -69,6 +77,8 @@ public class CardDefinition {
         private ResourceLocation requiredAdvancement = null;
         private int requiredPLevel = 0;
         private boolean guaranteedFirstDraw = false;
+        private CardUsability usability = CardUsability.ALWAYS;
+        private String usabilityHint = "";
         private CardEffect effect = (player, deck) -> {};
 
         public Builder(ResourceLocation id, String displayName, CardType type) {
@@ -83,6 +93,8 @@ public class CardDefinition {
         public Builder requiredAdvancement(@Nullable ResourceLocation adv) { this.requiredAdvancement = adv; return this; }
         public Builder requiredPLevel(int level) { this.requiredPLevel = level; return this; }
         public Builder guaranteedFirstDraw(boolean v) { this.guaranteedFirstDraw = v; return this; }
+        /** hint: 「集中3以上が必要」のような、条件未達時にプレイヤーへ表示する短い説明文 */
+        public Builder usableWhen(CardUsability usability, String hint) { this.usability = usability; this.usabilityHint = hint; return this; }
         public Builder effect(CardEffect effect) { this.effect = effect; return this; }
 
         public CardDefinition build() {

@@ -18,7 +18,7 @@ import java.util.Locale;
  * 手帳所持中のみ表示されるHUD。
  * 左端：バフアイコン一覧（好調・絶好調は残り秒数をリアルタイム表示）。
  * 下部：手札3枚をカードスロット風テクスチャで表示。選択中のカードはゴールドハイライト＋少し上に。
- * 手札の上：現在のプロデューサーランク（Pレベル）。
+ * プロデューサーランク（Pレベル）は常時表示のバナーとしては出さず、カードのツールチップでのみ確認できるようにしている。
  */
 public class GakumasHudOverlay implements IGuiOverlay {
 
@@ -37,54 +37,52 @@ public class GakumasHudOverlay implements IGuiOverlay {
                 || mc.player.getOffhandItem().getItem() instanceof HandbookItem;
         if (!holdingHandbook) return;
 
-        renderPLevel(graphics, screenWidth, screenHeight);
         renderHand(mc, graphics, screenWidth, screenHeight);
     }
 
+    private static final int BUFF_ICON_SIZE = 18;
+    private static final int BUFF_LINE_W = 84;
+    private static final int BUFF_LINE_H = 20;
+
     private void renderBuffColumn(GuiGraphics graphics, int screenHeight) {
         int x = 6;
-        int y = screenHeight / 2 - 40;
-        int lineHeight = 14;
+        int y = screenHeight / 2 - 44;
+        int lineSpacing = 22;
 
         int focus = ClientDeckState.getFocusStacks();
         int goodTicks = ClientDeckState.getGoodTicks();
         int greatTicks = ClientDeckState.getGreatTicks();
 
         if (focus > 0) {
-            drawBuffLine(graphics, x, y, 0x55CCFF, "集中", "x" + focus);
-            y += lineHeight;
+            drawBuffLine(graphics, x, y, GuiTextures.ICON_FOCUS, "x" + focus);
+            y += lineSpacing;
         }
         if (goodTicks > 0) {
-            drawBuffLine(graphics, x, y, 0xFFD24D, "好調", formatSeconds(goodTicks));
-            y += lineHeight;
+            drawBuffLine(graphics, x, y, GuiTextures.ICON_GOOD_CONDITION, formatSeconds(goodTicks));
+            y += lineSpacing;
         }
         if (greatTicks > 0) {
-            drawBuffLine(graphics, x, y, 0xFF5599, "絶好調", formatSeconds(greatTicks));
-            y += lineHeight;
+            drawBuffLine(graphics, x, y, GuiTextures.ICON_GREAT_CONDITION, formatSeconds(greatTicks));
+            y += lineSpacing;
         }
     }
 
-    private void drawBuffLine(GuiGraphics graphics, int x, int y, int color, String label, String value) {
-        graphics.fill(x, y, x + 70, y + 12, 0x99000000);
-        graphics.drawString(Minecraft.getInstance().font, Component.literal(label), x + 2, y + 2, color, false);
-        graphics.drawString(Minecraft.getInstance().font, Component.literal(value), x + 40, y + 2, 0xFFFFFF, false);
+    private void drawBuffLine(GuiGraphics graphics, int x, int y, ResourceLocation icon, String value) {
+        // 丸みのある半透明パネル風の背景（角を落とすため4隅を少しだけ削る簡易処理）
+        graphics.fill(x + 1, y, x + BUFF_LINE_W - 1, y + BUFF_LINE_H, 0xAA1A1626);
+        graphics.fill(x, y + 1, x + BUFF_LINE_W, y + BUFF_LINE_H - 1, 0xAA1A1626);
+
+        int iconY = y + (BUFF_LINE_H - BUFF_ICON_SIZE) / 2;
+        int tex = GuiTextures.BUFF_ICON_TEX;
+        graphics.blit(icon, x + 3, iconY, BUFF_ICON_SIZE, BUFF_ICON_SIZE, 0f, 0f, tex, tex, tex, tex);
+
+        graphics.drawString(Minecraft.getInstance().font, Component.literal(value),
+                x + 3 + BUFF_ICON_SIZE + 6, y + BUFF_LINE_H / 2 - 4, 0xFFFFFFFF, true);
     }
 
     private String formatSeconds(int ticks) {
         double seconds = ticks / 20.0;
         return String.format(Locale.US, "%.1fs", seconds);
-    }
-
-    private void renderPLevel(GuiGraphics graphics, int screenWidth, int screenHeight) {
-        int level = ClientDeckState.getPLevel();
-        String text = "プロデューサーランク Lv." + level;
-        var font = Minecraft.getInstance().font;
-        int textWidth = font.width(text);
-        int x = screenWidth / 2 - textWidth / 2;
-        int y = screenHeight - 92;
-
-        graphics.fill(x - 6, y - 3, x + textWidth + 6, y + 11, 0x99000000);
-        graphics.drawString(font, text, x, y, 0xFFE8C97A, false);
     }
 
     private void renderHand(Minecraft mc, GuiGraphics graphics, int screenWidth, int screenHeight) {
@@ -97,10 +95,22 @@ public class GakumasHudOverlay implements IGuiOverlay {
         int baseY = screenHeight - 76;
 
         int selected = ClientDeckState.getSelectedIndex();
+        // 選択中カードだけ、ゆっくり呼吸するように拡縮させて「これが発動する」感を出す
+        float pulse = 1.0f + 0.05f * (0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() / 1000.0 * 2.4));
 
         for (int i = 0; i < hand.size(); i++) {
             int x = startX + i * (SLOT_SIZE + spacing);
             int y = baseY - (i == selected ? 8 : 0); // 選択中のカードは少し上にハイライト
+
+            var pose = graphics.pose();
+            pose.pushPose();
+            if (i == selected) {
+                float cx = x + SLOT_SIZE / 2f;
+                float cy = y + SLOT_SIZE / 2f;
+                pose.translate(cx, cy, 0);
+                pose.scale(pulse, pulse, 1f);
+                pose.translate(-cx, -cy, 0);
+            }
 
             ResourceLocation slotTex = (i == selected) ? GuiTextures.SLOT_HOVER : GuiTextures.SLOT;
             graphics.blit(slotTex, x, y, SLOT_SIZE, SLOT_SIZE, 0f, 0f, SLOT_TEX, SLOT_TEX, SLOT_TEX, SLOT_TEX);
@@ -113,6 +123,13 @@ public class GakumasHudOverlay implements IGuiOverlay {
                 graphics.renderItem(stack, iconX, iconY);
                 graphics.renderItemDecorations(mc.font, stack, iconX, iconY);
             }
+
+            // 今使用できないカードは、スロットごと薄暗くして一目で分かるようにする（本家準拠）
+            if (!ClientDeckState.isHandUsable(i)) {
+                graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xB0101018);
+            }
+
+            pose.popPose();
         }
     }
 }
