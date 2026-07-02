@@ -52,7 +52,7 @@ public class ClientInputHandler {
             if (!mc.player.isShiftKeyDown()) return; // スニーク中のみ
             if (!isHoldingHandbook()) return;
 
-            double delta = event.getScrollDeltaY();
+            double delta = event.getScrollDelta();
             if (delta == 0) return;
             int dir = delta > 0 ? -1 : 1; // 上スクロールで前のカード、下スクロールで次のカード
             NetworkHandler.CHANNEL.sendToServer(new SelectCardPacket(dir));

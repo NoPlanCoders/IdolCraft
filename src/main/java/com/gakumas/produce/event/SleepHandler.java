@@ -15,7 +15,7 @@ public class SleepHandler {
     @SubscribeEvent
     public static void onWakeUp(PlayerWakeUpEvent event) {
         // updateWorld = trueの場合のみ「朝を迎えて時間が進んだ（＝実際に夜を明かした）」ケースとして扱う
-        if (!event.updateWorld()) return;
+        if (!event.updateLevel()) return;
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {

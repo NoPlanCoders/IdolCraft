@@ -1,17 +1,17 @@
 package com.gakumas.produce.registry;
 
 import com.gakumas.produce.GakumasProduceMod;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class ModCreativeTab {
 
     public static final DeferredRegister<CreativeModeTab> TABS =
-            DeferredRegister.create(ForgeRegistries.CREATIVE_MODE_TABS, GakumasProduceMod.MOD_ID);
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, GakumasProduceMod.MOD_ID);
 
     public static final RegistryObject<CreativeModeTab> PRODUCE_TAB = TABS.register("produce_tab", () ->
             CreativeModeTab.builder()

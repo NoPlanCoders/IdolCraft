@@ -1,0 +1,15 @@
+{
+  "item.gakumas_produce.produce_handbook": "Produce Handbook",
+  "item.gakumas_produce.card_appeal_basic": "Basic Appeal",
+  "item.gakumas_produce.card_expression_basic": "Basic Expression",
+  "item.gakumas_produce.card_behavior_basic": "Basic Behavior",
+  "item.gakumas_produce.card_facial_basic": "Basic Expression (Face)",
+  "item.gakumas_produce.card_quiet_will": "Quiet Resolve",
+  "item.gakumas_produce.card_direction_plan": "Staging Plan",
+  "itemGroup.gakumas_produce.produce_tab": "Gakumas-style Produce",
+  "key.categories.gakumas_produce": "Gakumas-style Produce",
+  "key.gakumas_produce.reset_deck": "Reset Deck",
+  "key.gakumas_produce.skip_card": "Skip Card",
+  "advancements.gakumas_produce.rank.upper.title": "Upper Producer Rank (Test)",
+  "advancements.gakumas_produce.rank.upper.description": "Obtain a diamond to test-unlock"
+}
