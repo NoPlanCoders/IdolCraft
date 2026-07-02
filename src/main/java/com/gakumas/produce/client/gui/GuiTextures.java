@@ -34,8 +34,8 @@ public final class GuiTextures {
     public static final int HEADER_TEX_W = 1380;
     public static final int HEADER_TEX_H = 372;
     public static final int SLOT_TEX = 312;
-    public static final int PILL_TEX_W = 576;
-    public static final int PILL_TEX_H = 264;
+    public static final int PILL_TEX_W = 702;
+    public static final int PILL_TEX_H = 234;
     public static final int BUFF_ICON_TEX = 96;
     public static final int TOOLTIP_PANEL_TEX_W = 720;
     public static final int TOOLTIP_PANEL_TEX_H = 522;
