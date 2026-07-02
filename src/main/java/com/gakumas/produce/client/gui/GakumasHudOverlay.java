@@ -1,6 +1,5 @@
 package com.gakumas.produce.client.gui;
 
-import com.gakumas.produce.card.CardRegistry;
 import com.gakumas.produce.client.ClientDeckState;
 import com.gakumas.produce.item.HandbookItem;
 import net.minecraft.client.Minecraft;
@@ -101,11 +100,6 @@ public class GakumasHudOverlay implements IGuiOverlay {
         // 選択中カードだけ、ゆっくり呼吸するように拡縮させて「これが発動する」感を出す
         float pulse = 1.0f + 0.05f * (0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() / 1000.0 * 2.4));
 
-        // GUI座標系でのマウス位置（IGuiOverlayはマウス座標を受け取らないため手動で変換する）
-        double mouseX = mc.mouseHandler.xpos() * (double) screenWidth / mc.getWindow().getScreenWidth();
-        double mouseY = mc.mouseHandler.ypos() * (double) screenHeight / mc.getWindow().getScreenHeight();
-        ResourceLocation hoveredCard = null;
-
         for (int i = 0; i < hand.size(); i++) {
             int x = startX + i * (SLOT_SIZE + spacing);
             int y = baseY - (i == selected ? 8 : 0); // 選択中のカードは少し上にハイライト
@@ -142,16 +136,12 @@ public class GakumasHudOverlay implements IGuiOverlay {
             }
 
             pose.popPose();
-
-            if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y - 8 && mouseY < y + SLOT_SIZE) {
-                hoveredCard = hand.get(i);
-            }
         }
 
-        if (hoveredCard != null) {
-            ResourceLocation cardId = hoveredCard;
-            CardRegistry.get(cardId).ifPresent(def ->
-                    CardTooltipRenderer.render(graphics, mc.font, def, (int) mouseX, (int) mouseY, screenWidth, screenHeight));
-        }
+        // ※以前はここでマウスホバー判定によるカード詳細ポップアップを表示していたが、
+        // 通常プレイ中（Screenを開いていない状態）はマウスカーソルがキャプチャされ画面上の
+        // 実位置を持たないため、mouseHandler.xpos()/ypos() が不定な値になり、カードの周りに
+        // 意図しない黒っぽい枠（ポップアップの誤表示）が出没する不具合の原因になっていた。
+        // カード詳細は実際のカーソルが使えるデッキ編成画面（Dキー）側でのみ表示する。
     }
 }
