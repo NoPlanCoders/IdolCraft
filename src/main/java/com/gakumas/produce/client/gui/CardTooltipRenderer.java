@@ -19,10 +19,9 @@ public final class CardTooltipRenderer {
     private CardTooltipRenderer() {}
 
     // ── カラー ──
-    private static final int BG_DIM       = 0x80101018;
-    private static final int PANEL_FILL   = 0xF0F0F0FF;
+    private static final int PANEL_FILL   = 0xF8F0F0FF;
     private static final int PANEL_BORDER = 0xFFA088C0;
-    private static final int PANEL_GLOW   = 0x30C0A8E0;
+    private static final int PANEL_GLOW   = 0x40C0A8E0;
     private static final int TITLE_COLOR  = 0xFF2A1E40;
     private static final int TAG_GOLD     = 0xFFC49A35;
     private static final int COST_RED     = 0xFFC06050;
@@ -96,9 +95,6 @@ public final class CardTooltipRenderer {
         // 画面端・パネル端でクランプ
         x = Math.max(panelX + 4, Math.min(x, panelX + panelW - contentW - 4));
         y = Math.max(panelY + 4, Math.min(y, panelY + panelH - bodyH - 4));
-
-        // ── 背面暗転（ツールチップ周辺だけ） ──
-        g.fill(x - 6, y - 6, x + contentW + 6, y + bodyH + 6, BG_DIM);
 
         // ── パネル本体 ──
         // 白地

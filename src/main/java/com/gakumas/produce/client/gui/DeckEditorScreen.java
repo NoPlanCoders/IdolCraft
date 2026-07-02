@@ -173,9 +173,14 @@ public class DeckEditorScreen extends Screen {
 
         // ── ツールチップ（最前面） ──
         if (hoveredCard != null) {
+            // 全画面を暗くするオーバーレイでツールチップの最前面感を強調
+            graphics.fill(0, 0, this.width, this.height, 0xA0080818);
+            // Depth test を切って確実に前面描画
+            RenderSystem.disableDepthTest();
             CardRegistry.get(hoveredCard).ifPresent(def ->
                     CardTooltipRenderer.render(graphics, this.font, def, hoveredCardX, hoveredCardY,
                             this.width, this.height, panelX, panelY, PANEL_W, PANEL_H));
+            RenderSystem.enableDepthTest();
         }
     }
 
