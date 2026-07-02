@@ -1,16 +1,15 @@
 modLoader="javafml"
 loaderVersion="[47,)"
 license="MIT"
-issueTrackerURL=""
+issueTrackerURL="https://github.com/NoPlanCoders/IdolCraft/issues"
 
 [[mods]]
 modId="gakumas_produce"
 version="1.0.0"
-displayName="学園アイドルマスター風プロデュースシステム"
-authors="You"
+displayName="Gakumas Produce"
+authors="NoPlanCoders"
 description='''
-学マス風のデッキ・センスバフ（集中・好調・絶好調）システムをMinecraftに導入するMODです。
-プロデューサーランク（進捗）連動、リアルタイムバフ管理、HUD描画に対応しています。
+Gakumas-style produce card and buff system for Minecraft Forge 1.20.1.
 '''
 
 [[dependencies.gakumas_produce]]
