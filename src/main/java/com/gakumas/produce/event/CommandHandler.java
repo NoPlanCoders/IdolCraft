@@ -67,6 +67,20 @@ public final class CommandHandler {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerPLevelCommands() {
         return Commands.literal("plevel")
+            .then(Commands.literal("set")
+                .then(Commands.argument("level", IntegerArgumentType.integer(1))
+                    .executes(context -> runSetPLevel(
+                        context,
+                        getPlayer(context),
+                        IntegerArgumentType.getInteger(context, "level")
+                    ))))
+            .then(Commands.literal("add")
+                .then(Commands.argument("amount", IntegerArgumentType.integer(-1000, 1000))
+                    .executes(context -> runAddPLevel(
+                        context,
+                        getPlayer(context),
+                        IntegerArgumentType.getInteger(context, "amount")
+                    ))))
             .then(Commands.argument("target", EntityArgument.player())
                 .then(Commands.literal("set")
                     .then(Commands.argument("level", IntegerArgumentType.integer(1))
@@ -170,20 +184,30 @@ public final class CommandHandler {
     }
 
     private static int runSetPLevel(CommandContext<CommandSourceStack> context, ServerPlayer player, int level) {
+        final boolean[] updated = {false};
         player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
             deck.setPLevel(level);
             SyncHelper.syncTo(player, deck);
+            context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " のPレベルを Lv." + deck.getPLevel() + " に設定しました。"), true);
+            updated[0] = true;
         });
-        context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " のPレベルを Lv." + level + " に設定しました。"), true);
+        if (!updated[0]) {
+            context.getSource().sendFailure(Component.literal("Pレベルの更新に失敗しました。"));
+        }
         return 1;
     }
 
     private static int runAddPLevel(CommandContext<CommandSourceStack> context, ServerPlayer player, int amount) {
+        final boolean[] updated = {false};
         player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
             deck.setPLevel(deck.getPLevel() + amount);
             SyncHelper.syncTo(player, deck);
+            context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " のPレベルを Lv." + deck.getPLevel() + " にしました。"), true);
+            updated[0] = true;
         });
-        context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " のPレベルを " + (amount >= 0 ? "+" : "") + amount + " しました。"), true);
+        if (!updated[0]) {
+            context.getSource().sendFailure(Component.literal("Pレベルの更新に失敗しました。"));
+        }
         return 1;
     }
 
