@@ -158,10 +158,6 @@ public final class DeckService {
                 if (deck.getBuffState().getBonusActions() > 0 && !deck.getHand().isEmpty()) {
                     deck.getBuffState().consumeBonusAction();
                     deck.setSelectedIndex(0);
-                    player.displayClientMessage(
-                            Component.literal("【スキルカード追加使用！】").withStyle(ChatFormatting.YELLOW),
-                            true
-                    );
                     return; // 捨て札送り・新規ドローを行わず、同じ手札から続けて選べる状態を維持する
                 }
             }
