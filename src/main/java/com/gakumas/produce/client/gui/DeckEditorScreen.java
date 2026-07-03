@@ -52,14 +52,16 @@ public class DeckEditorScreen extends Screen {
     private static final int GRID_ROWS = 4;
     private static final int MAX_DECK_SIZE = 30;
 
-    // ── カラー ──
-    private static final int COLOR_GOLD      = 0xFFD4A843;
-    private static final int COLOR_GOLD_DIM  = 0xFFC0A860;
-    private static final int COLOR_LABEL     = 0xFFB5ADC8;
-    private static final int COLOR_CAPTION   = 0xFFC0B8D4;
-    private static final int COLOR_DIVIDER   = 0x40655890;
-    private static final int COLOR_BACKDROP  = 0xD0080418;
-    private static final int COLOR_TAG_GOLD  = 0xFFE8C97A;
+    // ── カラー（学マス風 白ベース + CMYアクセント）──
+    private static final int COLOR_TITLE     = 0xFF3A3550; // ヘッダー白地に乗るタイトル（濃いスレート）
+    private static final int COLOR_PINK      = 0xFFF26098; // CMY: マゼンタ（主要アクセント）
+    private static final int COLOR_CYAN      = 0xFF3AB2EC; // CMY: シアン
+    private static final int COLOR_YELLOW    = 0xFFF8C442; // CMY: イエロー
+    private static final int COLOR_LABEL     = 0xFF6B6880; // 白パネル上のセクションラベル
+    private static final int COLOR_CAPTION   = 0xFF8A87A0; // 白パネル上の補助キャプション
+    private static final int COLOR_DIVIDER   = 0xFFDCDEEC; // 淡いラベンダーの区切り線
+    private static final int COLOR_BACKDROP  = 0x88283050; // 背景ディム（真っ黒を避けた青みグレー）
+    private static final int COLOR_TAG_GOLD  = 0xFFF8C442; // レッスン1回タグ（イエロー）
 
     private final List<ResourceLocation> availableCards = new ArrayList<>();
     private final List<ResourceLocation> deckCards = new ArrayList<>();
@@ -141,7 +143,7 @@ public class DeckEditorScreen extends Screen {
         int hx = panelX + (PANEL_W - HEADER_W) / 2;
         int hy = panelY - 18;
         blitTex(graphics, TEX_HEADER, hx, hy, HEADER_W, HEADER_H, TEXSIZE_HEADER_W, TEXSIZE_HEADER_H);
-        graphics.drawCenteredString(this.font, "デッキ編成", panelX + PANEL_W / 2, hy + HEADER_H / 2 - 5, COLOR_GOLD);
+        graphics.drawCenteredString(this.font, "デッキ編成", panelX + PANEL_W / 2, hy + HEADER_H / 2 - 5, COLOR_TITLE);
 
         // ── セクションラベル ──
         graphics.drawString(this.font, "カード一覧 (" + availableCards.size() + ")",
@@ -150,12 +152,12 @@ public class DeckEditorScreen extends Screen {
         int dw = this.font.width(dLabel);
         graphics.drawString(this.font, dLabel, rightGridX + GRID_COLS * SLOT_SIZE - dw, panelY + 70, COLOR_LABEL, false);
 
-        // ── ゴールド装飾ディバイダ ──
+        // ── CMY装飾ディバイダ ──
         int divX = leftGridX + GRID_COLS * SLOT_SIZE + 12;
-        graphics.fill(divX - 1, gridY - 6, divX, gridY + gridHeight + 6, COLOR_GOLD_DIM);
-        // ディバイダの上下に小さな金の点
-        graphics.fill(divX - 2, gridY - 10, divX + 1, gridY - 6, COLOR_GOLD);
-        graphics.fill(divX - 2, gridY + gridHeight + 6, divX + 1, gridY + gridHeight + 10, COLOR_GOLD);
+        graphics.fill(divX - 1, gridY - 6, divX, gridY + gridHeight + 6, COLOR_DIVIDER);
+        // ディバイダの上下に小さなCMYの点（上=シアン, 下=ピンク）
+        graphics.fill(divX - 2, gridY - 10, divX + 1, gridY - 6, COLOR_CYAN);
+        graphics.fill(divX - 2, gridY + gridHeight + 6, divX + 1, gridY + gridHeight + 10, COLOR_PINK);
 
         // ── グリッド描画 ──
         hoveredCard = null;
@@ -173,8 +175,8 @@ public class DeckEditorScreen extends Screen {
 
         // ── ツールチップ（最前面） ──
         if (hoveredCard != null) {
-            // 全画面を暗くするオーバーレイでツールチップの最前面感を強調
-            graphics.fill(0, 0, this.width, this.height, 0xA0080818);
+            // 全画面をわずかに暗くしてツールチップの最前面感を強調（青みグレー）
+            graphics.fill(0, 0, this.width, this.height, 0x88283050);
             // Depth test を切って確実に前面描画
             RenderSystem.disableDepthTest();
             CardRegistry.get(hoveredCard).ifPresent(def ->

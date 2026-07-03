@@ -36,13 +36,12 @@ public class GakumasHudOverlay implements IGuiOverlay {
         renderHand(mc, g, sw, sh);
     }
 
-    // ── バフ表示 ──
-    private static final int BUF_ICON = 18;
-    private static final int BUF_W = 88;
-    private static final int BUF_H = 22;
+    // ── バフ表示（本家学マス風: 浮遊ダイヤ + 横にテキスト） ──
+    private static final int BUF_ICON = 26;
 
     private void renderBuffColumn(GuiGraphics g, int sh) {
-        int x = 4, y = sh / 2 - 44, gap = 24;
+        int x = 6, gap = 32;
+        int y = sh / 2 - 48;
         int f = ClientDeckState.getFocusStacks();
         int gd = ClientDeckState.getGoodTicks();
         int gr = ClientDeckState.getGreatTicks();
@@ -52,18 +51,13 @@ public class GakumasHudOverlay implements IGuiOverlay {
     }
 
     private void drawBuff(GuiGraphics g, int x, int y, ResourceLocation icon, String val) {
-        // 半透明ダークパネル（簡易角丸再現）
-        g.fill(x + 1, y, x + BUF_W - 1, y + BUF_H, 0xCC181230);
-        g.fill(x, y + 1, x + BUF_W, y + BUF_H - 1, 0xCC181230);
-        // 上端に薄いゴールドライン
-        g.fill(x + 4, y + 1, x + BUF_W - 4, y + 2, 0x60D4A843);
-        // アイコン
-        int iy = y + (BUF_H - BUF_ICON) / 2;
+        // ダイヤ型アイコン（テクスチャ自体に影・白リムを含む。縮小はリニアで滑らかに）
         int tex = GuiTextures.BUFF_ICON_TEX;
-        g.blit(icon, x + 4, iy, BUF_ICON, BUF_ICON, 0f, 0f, tex, tex, tex, tex);
-        // テキスト
+        GuiTextures.bindSmooth(icon);
+        g.blit(icon, x, y, BUF_ICON, BUF_ICON, 0f, 0f, tex, tex, tex, tex);
+        // テキスト（白＋影で世界背景に対して視認性確保）
         g.drawString(Minecraft.getInstance().font, Component.literal(val),
-                x + 4 + BUF_ICON + 6, y + BUF_H / 2 - 4, 0xFFFFFFFF, true);
+                x + BUF_ICON + 3, y + BUF_ICON / 2 - 4, 0xFFFFFFFF, true);
     }
 
     private static String fmt(int ticks) {

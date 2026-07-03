@@ -18,16 +18,16 @@ public final class CardTooltipRenderer {
 
     private CardTooltipRenderer() {}
 
-    // ── カラー ──
-    private static final int PANEL_FILL   = 0xF8F0F0FF;
-    private static final int PANEL_BORDER = 0xFFA088C0;
-    private static final int PANEL_GLOW   = 0x40C0A8E0;
-    private static final int TITLE_COLOR  = 0xFF2A1E40;
-    private static final int TAG_GOLD     = 0xFFC49A35;
-    private static final int COST_RED     = 0xFFC06050;
-    private static final int DESC_BLUE    = 0xFF5A82A8;
-    private static final int PLEVEL_PURPLE = 0xFF8570C0;
-    private static final int GOLD_LINE    = 0xFFD4A843;
+    // ── カラー（学マス風 白ベース + CMYアクセント）──
+    private static final int PANEL_FILL   = 0xFFFFFFFF; // 純白すりガラス
+    private static final int PANEL_BORDER = 0xFFE2E4F0; // 淡いラベンダーグレー枠
+    private static final int PANEL_GLOW   = 0x33C0C8E8; // 淡いグロー
+    private static final int TITLE_COLOR  = 0xFF2A2440; // 濃いスレート（タイトル）
+    private static final int TAG_GOLD     = 0xFFE8A81E; // レッスン1回タグ（イエロー）
+    private static final int COST_RED     = 0xFFE05878; // 消費体力（ピンクレッド）
+    private static final int DESC_BLUE    = 0xFF3F86B8; // 説明（シアン寄りブルー）
+    private static final int PLEVEL_PURPLE = 0xFF8570C0; // 必要Pレベル
+    private static final int GOLD_LINE    = 0xFFF26098; // 上部アクセント線（ピンク）
 
     private record Line(String text, int color, int iconColor) {}
     private static Line line(String text, int color) { return new Line(text, color, 0); }
