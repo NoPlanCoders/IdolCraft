@@ -92,6 +92,12 @@ def blur_shadow(w, h, radius, fill_color, blur_radius):
                         radius=radius, fill=fill_color)
     return layer.filter(ImageFilter.GaussianBlur(blur_radius))
 
+def lighten(c, f):
+    return tuple(min(255, int(c[i] + (255 - c[i]) * f)) for i in range(3))
+
+def darken(c, f):
+    return tuple(max(0, int(c[i] * (1 - f))) for i in range(3))
+
 def cmy_accent_line(d, x0, x1, y, thickness, radius=2):
     """青→ピンク→黄 の3分割アクセントライン（学マスのCMYパラメータ色）"""
     span = x1 - x0
@@ -239,20 +245,40 @@ def gen_pill(color):
     return img
 
 
-def gen_buff_icon(fg_color, shape_fn):
-    """バフアイコン（白い円地 + CMY単色シェイプ + 同色リング。ドット絵調）"""
-    w, h = TEX["buff_icon"]
+def gen_buff_icon(base_color, shape_fn):
+    """バフアイコン（本家学マス風: 角丸ひし形＝ダイヤ型 + グラデ + 白グリフ + 白リム）。
+    ダイヤ背景だけを45°回転させ、グリフは正立で上描きする。"""
+    w, h = TEX["buff_icon"]   # 96 x 96
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    cx, cy = w // 2, h // 2
-    rad = 34
 
-    # 白い円地（学マスの白ベース）
-    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), fill=(255, 255, 255, 255))
-    # 単色シェイプ
-    shape_fn(d, cx, cy, rad - 9, fg_color)
-    # 同色リング
-    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), outline=fg_color, width=4)
+    side = 58
+    rad = 15
+
+    # 角丸スクエアにグラデ（明→暗）を敷き、白リムを重ねる
+    sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    grad = gradient_vertical(side, side, lighten(base_color, 0.32), darken(base_color, 0.14))
+    sq.paste(grad, (0, 0), rounded_rect_mask((side, side), rad))
+    ImageDraw.Draw(sq).rounded_rectangle((2, 2, side - 3, side - 3), radius=rad - 2,
+                                         outline=(255, 255, 255, 235), width=3)
+
+    # 45°回転してダイヤ型に
+    dia = sq.rotate(45, expand=True, resample=Image.BICUBIC)
+    ox = (w - dia.width) // 2
+    oy = (h - dia.height) // 2
+
+    # ソフトシャドウ（ダイヤのアルファから生成）
+    alpha = dia.split()[3]
+    shadow = Image.new("RGBA", dia.size, (*C_SHADOW, 0))
+    shadow.putalpha(alpha.point(lambda a: int(a * 0.45)))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(5))
+    img.paste(shadow, (ox, oy + 3), shadow)
+
+    # ダイヤ本体
+    img.paste(dia, (ox, oy), dia)
+
+    # 正立の白グリフ
+    cx, cy = w // 2, h // 2
+    shape_fn(ImageDraw.Draw(img), cx, cy, 22, (255, 255, 255, 255))
 
     return img
 

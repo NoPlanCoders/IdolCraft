@@ -36,35 +36,28 @@ public class GakumasHudOverlay implements IGuiOverlay {
         renderHand(mc, g, sw, sh);
     }
 
-    // ── バフ表示 ──
-    private static final int BUF_ICON = 18;
-    private static final int BUF_W = 88;
-    private static final int BUF_H = 22;
+    // ── バフ表示（本家学マス風: 浮遊ダイヤ + 横にテキスト） ──
+    private static final int BUF_ICON = 26;
 
     private void renderBuffColumn(GuiGraphics g, int sh) {
-        int x = 4, y = sh / 2 - 44, gap = 24;
+        int x = 6, gap = 32;
+        int y = sh / 2 - 48;
         int f = ClientDeckState.getFocusStacks();
         int gd = ClientDeckState.getGoodTicks();
         int gr = ClientDeckState.getGreatTicks();
-        if (f > 0) { drawBuff(g, x, y, GuiTextures.ICON_FOCUS, "x" + f, 0xFF3AB2EC); y += gap; }
-        if (gd > 0) { drawBuff(g, x, y, GuiTextures.ICON_GOOD_CONDITION, fmt(gd), 0xFFF8C442); y += gap; }
-        if (gr > 0) { drawBuff(g, x, y, GuiTextures.ICON_GREAT_CONDITION, fmt(gr), 0xFFF26098); }
+        if (f > 0) { drawBuff(g, x, y, GuiTextures.ICON_FOCUS, "x" + f); y += gap; }
+        if (gd > 0) { drawBuff(g, x, y, GuiTextures.ICON_GOOD_CONDITION, fmt(gd)); y += gap; }
+        if (gr > 0) { drawBuff(g, x, y, GuiTextures.ICON_GREAT_CONDITION, fmt(gr)); }
     }
 
-    // アクセント色（左端バー）: 集中=シアン / 好調=イエロー / 絶好調=ピンク
-    private void drawBuff(GuiGraphics g, int x, int y, ResourceLocation icon, String val, int accent) {
-        // 半透明の白すりガラスパネル（簡易角丸再現）
-        g.fill(x + 1, y, x + BUF_W - 1, y + BUF_H, 0xE6FAFBFF);
-        g.fill(x, y + 1, x + BUF_W, y + BUF_H - 1, 0xE6FAFBFF);
-        // 左端にCMYアクセントバー
-        g.fill(x, y + 3, x + 3, y + BUF_H - 3, accent);
-        // アイコン
-        int iy = y + (BUF_H - BUF_ICON) / 2;
+    private void drawBuff(GuiGraphics g, int x, int y, ResourceLocation icon, String val) {
+        // ダイヤ型アイコン（テクスチャ自体に影・白リムを含む。縮小はリニアで滑らかに）
         int tex = GuiTextures.BUFF_ICON_TEX;
-        g.blit(icon, x + 7, iy, BUF_ICON, BUF_ICON, 0f, 0f, tex, tex, tex, tex);
-        // テキスト（白地に濃いスレート、影なし）
+        GuiTextures.bindSmooth(icon);
+        g.blit(icon, x, y, BUF_ICON, BUF_ICON, 0f, 0f, tex, tex, tex, tex);
+        // テキスト（白＋影で世界背景に対して視認性確保）
         g.drawString(Minecraft.getInstance().font, Component.literal(val),
-                x + 7 + BUF_ICON + 6, y + BUF_H / 2 - 4, 0xFF3A3550, false);
+                x + BUF_ICON + 3, y + BUF_ICON / 2 - 4, 0xFFFFFFFF, true);
     }
 
     private static String fmt(int ticks) {
