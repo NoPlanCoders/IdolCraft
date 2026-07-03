@@ -74,6 +74,14 @@ public class BuffState {
         this.greatConditionTicks += ticks;
     }
 
+    /** 集中・好調・絶好調だけをまとめて消す。進捗やパッシブフラグは残す。 */
+    public void clearStatusBuffs() {
+        focusStacks = 0;
+        goodConditionTicks = 0;
+        greatConditionTicks = 0;
+        goodConditionTurnsAccumulated = 0;
+    }
+
     public int getGoodConditionTurnsAccumulated() {
         return goodConditionTurnsAccumulated;
     }
@@ -138,10 +146,7 @@ public class BuffState {
 
     /** デッキリセット時：すべてのバフを完全に0へ戻す */
     public void resetAll() {
-        focusStacks = 0;
-        goodConditionTicks = 0;
-        greatConditionTicks = 0;
-        goodConditionTurnsAccumulated = 0;
+        clearStatusBuffs();
         passiveFlags.clear();
         customCounters.clear();
     }
