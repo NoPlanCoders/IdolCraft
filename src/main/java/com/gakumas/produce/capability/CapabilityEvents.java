@@ -27,16 +27,14 @@ public class CapabilityEvents {
         }
     }
 
-    /** プレイヤーがリスポーンした際にもデッキ・バフ状態を引き継ぐ（死亡してもデッキ管理自体は失われないようにする） */
+    /** プレイヤーがクローンされた際にデッキ・バフ状態を引き継ぐ（死亡時だけでなく、次元移動系のクローンでも保持する） */
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        if (event.isWasDeath()) {
-            event.getOriginal().reviveCaps();
-            event.getOriginal().getCapability(DeckCapability.DECK_DATA).ifPresent(oldData -> {
-                CompoundTag tag = oldData.serializeNBT();
-                event.getEntity().getCapability(DeckCapability.DECK_DATA).ifPresent(newData -> newData.deserializeNBT(tag));
-            });
-            event.getOriginal().invalidateCaps();
-        }
+        event.getOriginal().reviveCaps();
+        event.getOriginal().getCapability(DeckCapability.DECK_DATA).ifPresent(oldData -> {
+            CompoundTag tag = oldData.serializeNBT();
+            event.getEntity().getCapability(DeckCapability.DECK_DATA).ifPresent(newData -> newData.deserializeNBT(tag));
+        });
+        event.getOriginal().invalidateCaps();
     }
 }
