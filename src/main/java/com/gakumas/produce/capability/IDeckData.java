@@ -37,9 +37,17 @@ public interface IDeckData {
     /**
      * プロデューサーランク（Pレベル）。デッキリセットやバフリセットでは変化しない、
      * プレイヤーの長期的な進捗値。この値によって使用可能なカードの種類が増えていく。
+     * 実体は {@link #getProduceXp() 累計経験値} から {@link com.gakumas.produce.util.PLevelCurve} で導出される。
      */
     int getPLevel();
+    /** Pレベルを直接指定する（対応する累計経験値に置き換える）。コマンド等のデバッグ用途向け。 */
     void setPLevel(int level);
+
+    /** Pレベルの基準となる累計経験値（Minecraftの経験値オーブ取得量の累計） */
+    long getProduceXp();
+    void setProduceXp(long xp);
+    /** 累計経験値を加算する（負値は0でクランプ）。 */
+    void addProduceXp(long delta);
 
     CompoundTag serializeNBT();
     void deserializeNBT(CompoundTag tag);

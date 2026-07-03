@@ -22,6 +22,7 @@
   "key.gakumas_produce.reset_deck": "デッキをリセット",
   "key.gakumas_produce.skip_card": "カードをスキップ",
   "key.gakumas_produce.open_deck_editor": "デッキエディターを開く",
+  "key.gakumas_produce.open_plevel": "プロデューサーランクを開く",
   "advancements.gakumas_produce.rank.upper.title": "プロデューサーランク Lv.20（テスト）",
   "advancements.gakumas_produce.rank.upper.description": "ダイヤモンドを入手してテスト解除",
   "advancements.gakumas_produce.rank.plv_6.title": "プロデューサーランク Lv.6（テスト）",

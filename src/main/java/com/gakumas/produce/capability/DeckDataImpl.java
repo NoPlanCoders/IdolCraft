@@ -1,6 +1,7 @@
 package com.gakumas.produce.capability;
 
 import com.gakumas.produce.buff.BuffState;
+import com.gakumas.produce.util.PLevelCurve;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -19,7 +20,7 @@ public class DeckDataImpl implements IDeckData {
     private final List<ResourceLocation> masterCardList = new ArrayList<>();
     private int selectedIndex = 0;
     private boolean initialized = false;
-    private int pLevel = 0;
+    private long produceXp = 0;
     private final BuffState buffState = new BuffState();
 
     @Override public List<ResourceLocation> getDrawPile() { return drawPile; }
@@ -45,8 +46,12 @@ public class DeckDataImpl implements IDeckData {
     @Override public boolean isInitialized() { return initialized; }
     @Override public void setInitialized(boolean initialized) { this.initialized = initialized; }
 
-    @Override public int getPLevel() { return pLevel; }
-    @Override public void setPLevel(int level) { this.pLevel = Math.max(0, level); }
+    @Override public int getPLevel() { return PLevelCurve.levelForXp(produceXp); }
+    @Override public void setPLevel(int level) { this.produceXp = PLevelCurve.totalXpForLevel(Math.max(1, level)); }
+
+    @Override public long getProduceXp() { return produceXp; }
+    @Override public void setProduceXp(long xp) { this.produceXp = Math.max(0, xp); }
+    @Override public void addProduceXp(long delta) { this.produceXp = Math.max(0, this.produceXp + delta); }
 
     private static ListTag toListTag(List<ResourceLocation> list) {
         ListTag tag = new ListTag();
@@ -73,7 +78,7 @@ public class DeckDataImpl implements IDeckData {
         tag.put("master", toListTag(masterCardList));
         tag.putInt("selected", selectedIndex);
         tag.putBoolean("initialized", initialized);
-        tag.putInt("pLevel", pLevel);
+        tag.putLong("produceXp", produceXp);
         tag.put("buff", buffState.serializeNBT());
         return tag;
     }
@@ -87,7 +92,14 @@ public class DeckDataImpl implements IDeckData {
         masterCardList.clear(); masterCardList.addAll(fromListTag(tag.getList("master", Tag.TAG_STRING)));
         selectedIndex = tag.getInt("selected");
         initialized = tag.getBoolean("initialized");
-        pLevel = tag.getInt("pLevel");
+        // 経験値制へ移行: 新形式 produceXp があればそれを使い、旧形式(pLevel)しかなければ換算して引き継ぐ
+        if (tag.contains("produceXp")) {
+            produceXp = tag.getLong("produceXp");
+        } else if (tag.contains("pLevel")) {
+            produceXp = PLevelCurve.totalXpForLevel(Math.max(1, tag.getInt("pLevel")));
+        } else {
+            produceXp = 0;
+        }
         buffState.deserializeNBT(tag.getCompound("buff"));
     }
 }

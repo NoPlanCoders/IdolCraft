@@ -32,5 +32,13 @@ public final class KeyBindings {
             CATEGORY
     );
 
+    public static final KeyMapping OPEN_PLEVEL = new KeyMapping(
+            "key.gakumas_produce.open_plevel",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_P,
+            CATEGORY
+    );
+
     private KeyBindings() {}
 }

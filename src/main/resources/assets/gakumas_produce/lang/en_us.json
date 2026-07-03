@@ -22,6 +22,7 @@
   "key.gakumas_produce.reset_deck": "Reset Deck",
   "key.gakumas_produce.skip_card": "Skip Card",
   "key.gakumas_produce.open_deck_editor": "Open Deck Editor",
+  "key.gakumas_produce.open_plevel": "Open Producer Rank",
   "advancements.gakumas_produce.rank.upper.title": "Producer Rank Lv.20 (Test)",
   "advancements.gakumas_produce.rank.upper.description": "Obtain a diamond to test-unlock",
   "advancements.gakumas_produce.rank.plv_6.title": "Producer Rank Lv.6 (Test)",

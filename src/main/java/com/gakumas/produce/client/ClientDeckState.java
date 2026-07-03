@@ -22,10 +22,11 @@ public final class ClientDeckState {
     private static int goodTicks = 0;
     private static int greatTicks = 0;
     private static int pLevel = 0;
+    private static long produceXp = 0;
 
     private ClientDeckState() {}
 
-    public static void update(List<ResourceLocation> newHand, List<Boolean> newHandUsable, int selected, int focus, int good, int great, int level) {
+    public static void update(List<ResourceLocation> newHand, List<Boolean> newHandUsable, int selected, int focus, int good, int great, int level, long xp) {
         hand = newHand;
         handUsable = newHandUsable;
         selectedIndex = selected;
@@ -33,6 +34,7 @@ public final class ClientDeckState {
         goodTicks = good;
         greatTicks = great;
         pLevel = level;
+        produceXp = xp;
     }
 
     /** クライアント側描画の滑らかさのため、サーバー同期の合間も毎クライアントTickで1ずつ減らす（サーバー再同期で補正される） */
@@ -53,4 +55,5 @@ public final class ClientDeckState {
     public static int getGoodTicks() { return goodTicks; }
     public static int getGreatTicks() { return greatTicks; }
     public static int getPLevel() { return pLevel; }
+    public static long getProduceXp() { return produceXp; }
 }

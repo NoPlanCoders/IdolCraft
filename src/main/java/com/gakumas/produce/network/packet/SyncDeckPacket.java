@@ -22,6 +22,7 @@ public class SyncDeckPacket {
     private final int goodTicks;
     private final int greatTicks;
     private final int pLevel;
+    private final long produceXp;
 
     public SyncDeckPacket(ServerPlayer player, IDeckData deck) {
         this.hand = new ArrayList<>(deck.getHand());
@@ -37,9 +38,10 @@ public class SyncDeckPacket {
         this.goodTicks = deck.getBuffState().getGoodConditionTicks();
         this.greatTicks = deck.getBuffState().getGreatConditionTicks();
         this.pLevel = deck.getPLevel();
+        this.produceXp = deck.getProduceXp();
     }
 
-    private SyncDeckPacket(List<ResourceLocation> hand, List<Boolean> handUsable, int selectedIndex, int focusStacks, int goodTicks, int greatTicks, int pLevel) {
+    private SyncDeckPacket(List<ResourceLocation> hand, List<Boolean> handUsable, int selectedIndex, int focusStacks, int goodTicks, int greatTicks, int pLevel, long produceXp) {
         this.hand = hand;
         this.handUsable = handUsable;
         this.selectedIndex = selectedIndex;
@@ -47,6 +49,7 @@ public class SyncDeckPacket {
         this.goodTicks = goodTicks;
         this.greatTicks = greatTicks;
         this.pLevel = pLevel;
+        this.produceXp = produceXp;
     }
 
     public static void encode(SyncDeckPacket msg, FriendlyByteBuf buf) {
@@ -58,6 +61,7 @@ public class SyncDeckPacket {
         buf.writeVarInt(msg.goodTicks);
         buf.writeVarInt(msg.greatTicks);
         buf.writeVarInt(msg.pLevel);
+        buf.writeVarLong(msg.produceXp);
     }
 
     public static SyncDeckPacket decode(FriendlyByteBuf buf) {
@@ -71,13 +75,14 @@ public class SyncDeckPacket {
         int good = buf.readVarInt();
         int great = buf.readVarInt();
         int pLevel = buf.readVarInt();
-        return new SyncDeckPacket(hand, handUsable, selected, focus, good, great, pLevel);
+        long produceXp = buf.readVarLong();
+        return new SyncDeckPacket(hand, handUsable, selected, focus, good, great, pLevel, produceXp);
     }
 
     public static void handle(SyncDeckPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
                 net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        com.gakumas.produce.client.ClientDeckState.update(msg.hand, msg.handUsable, msg.selectedIndex, msg.focusStacks, msg.goodTicks, msg.greatTicks, msg.pLevel)
+                        com.gakumas.produce.client.ClientDeckState.update(msg.hand, msg.handUsable, msg.selectedIndex, msg.focusStacks, msg.goodTicks, msg.greatTicks, msg.pLevel, msg.produceXp)
                 )
         );
         ctx.get().setPacketHandled(true);

@@ -29,7 +29,41 @@ public final class CommandHandler {
         dispatcher.register(Commands.literal("gakumas")
             .then(registerDeckCommands())
             .then(registerBuffCommands())
+            .then(registerRankCommands())
         );
+    }
+
+    private static ArgumentBuilder<CommandSourceStack, ?> registerRankCommands() {
+        return Commands.literal("rank")
+            .then(Commands.literal("set")
+                .then(Commands.argument("level", IntegerArgumentType.integer(1, 60))
+                    .executes(context -> runSetRank(context, IntegerArgumentType.getInteger(context, "level")))))
+            .then(Commands.literal("addxp")
+                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                    .executes(context -> runAddRankXp(context, IntegerArgumentType.getInteger(context, "amount")))));
+    }
+
+    private static int runSetRank(CommandContext<CommandSourceStack> context, int level) {
+        ServerPlayer player = getPlayer(context);
+        if (player == null) return 0;
+        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
+            deck.setPLevel(level);
+            SyncHelper.syncTo(player, deck);
+        });
+        context.getSource().sendSuccess(() -> Component.literal("プロデューサーランクを Lv." + level + " に設定しました。"), true);
+        return 1;
+    }
+
+    private static int runAddRankXp(CommandContext<CommandSourceStack> context, int amount) {
+        ServerPlayer player = getPlayer(context);
+        if (player == null) return 0;
+        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
+            deck.addProduceXp(amount);
+            SyncHelper.syncTo(player, deck);
+            context.getSource().sendSuccess(
+                    () -> Component.literal("プロデュース経験値 +" + amount + "（現在 Lv." + deck.getPLevel() + "）"), true);
+        });
+        return 1;
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerDeckCommands() {

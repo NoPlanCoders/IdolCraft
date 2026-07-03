@@ -22,6 +22,7 @@ public class ClientInputHandler {
         event.register(KeyBindings.RESET_DECK);
         event.register(KeyBindings.SKIP_CARD);
         event.register(KeyBindings.OPEN_DECK_EDITOR);
+        event.register(KeyBindings.OPEN_PLEVEL);
     }
 
     @Mod.EventBusSubscriber(modid = GakumasProduceMod.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -45,6 +46,12 @@ public class ClientInputHandler {
                 Minecraft mc = Minecraft.getInstance();
                 if (mc.player != null) {
                     mc.setScreen(new com.gakumas.produce.client.gui.DeckEditorScreen());
+                }
+            }
+            while (KeyBindings.OPEN_PLEVEL.consumeClick()) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player != null) {
+                    mc.setScreen(new com.gakumas.produce.client.gui.PLevelScreen());
                 }
             }
         }
