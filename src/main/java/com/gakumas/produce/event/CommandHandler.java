@@ -29,41 +29,8 @@ public final class CommandHandler {
         dispatcher.register(Commands.literal("gakumas")
             .then(registerDeckCommands())
             .then(registerBuffCommands())
-            .then(registerRankCommands())
+            .then(registerPLevelCommands())
         );
-    }
-
-    private static ArgumentBuilder<CommandSourceStack, ?> registerRankCommands() {
-        return Commands.literal("rank")
-            .then(Commands.literal("set")
-                .then(Commands.argument("level", IntegerArgumentType.integer(1, 60))
-                    .executes(context -> runSetRank(context, IntegerArgumentType.getInteger(context, "level")))))
-            .then(Commands.literal("addxp")
-                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
-                    .executes(context -> runAddRankXp(context, IntegerArgumentType.getInteger(context, "amount")))));
-    }
-
-    private static int runSetRank(CommandContext<CommandSourceStack> context, int level) {
-        ServerPlayer player = getPlayer(context);
-        if (player == null) return 0;
-        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
-            deck.setPLevel(level);
-            SyncHelper.syncTo(player, deck);
-        });
-        context.getSource().sendSuccess(() -> Component.literal("プロデューサーランクを Lv." + level + " に設定しました。"), true);
-        return 1;
-    }
-
-    private static int runAddRankXp(CommandContext<CommandSourceStack> context, int amount) {
-        ServerPlayer player = getPlayer(context);
-        if (player == null) return 0;
-        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
-            deck.addProduceXp(amount);
-            SyncHelper.syncTo(player, deck);
-            context.getSource().sendSuccess(
-                    () -> Component.literal("プロデュース経験値 +" + amount + "（現在 Lv." + deck.getPLevel() + "）"), true);
-        });
-        return 1;
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerDeckCommands() {
@@ -97,6 +64,25 @@ public final class CommandHandler {
                 .then(Commands.literal("clear")
                     .executes(context -> runClearBuffs(context, EntityArgument.getPlayer(context, "target")))));
         }
+
+    private static ArgumentBuilder<CommandSourceStack, ?> registerPLevelCommands() {
+        return Commands.literal("plevel")
+            .then(Commands.argument("target", EntityArgument.player())
+                .then(Commands.literal("set")
+                    .then(Commands.argument("level", IntegerArgumentType.integer(1))
+                        .executes(context -> runSetPLevel(
+                            context,
+                            EntityArgument.getPlayer(context, "target"),
+                            IntegerArgumentType.getInteger(context, "level")
+                        ))))
+                .then(Commands.literal("add")
+                    .then(Commands.argument("amount", IntegerArgumentType.integer(-1000, 1000))
+                        .executes(context -> runAddPLevel(
+                            context,
+                            EntityArgument.getPlayer(context, "target"),
+                            IntegerArgumentType.getInteger(context, "amount")
+                        )))));
+    }
 
     private static int runDeckReset(CommandContext<CommandSourceStack> context) {
         ServerPlayer player = getPlayer(context);
@@ -180,6 +166,24 @@ public final class CommandHandler {
             SyncHelper.syncTo(player, deck);
         });
         context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " の集中・好調・絶好調を消しました。"), true);
+        return 1;
+    }
+
+    private static int runSetPLevel(CommandContext<CommandSourceStack> context, ServerPlayer player, int level) {
+        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
+            deck.setPLevel(level);
+            SyncHelper.syncTo(player, deck);
+        });
+        context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " のPレベルを Lv." + level + " に設定しました。"), true);
+        return 1;
+    }
+
+    private static int runAddPLevel(CommandContext<CommandSourceStack> context, ServerPlayer player, int amount) {
+        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
+            deck.setPLevel(deck.getPLevel() + amount);
+            SyncHelper.syncTo(player, deck);
+        });
+        context.getSource().sendSuccess(() -> Component.literal(player.getName().getString() + " のPレベルを " + (amount >= 0 ? "+" : "") + amount + " しました。"), true);
         return 1;
     }
 
