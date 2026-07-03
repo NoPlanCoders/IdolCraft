@@ -1,44 +1,57 @@
 #!/usr/bin/env python3
 """
-学マス風 GUI テクスチャ生成スクリプト v2
+学マス風 GUI テクスチャ生成スクリプト v3 ─ 白ベース + すりガラス + CMY
 Minecraft Forge 1.20.1 向け gakumas_produce MOD 用。
 
-本家学園アイドルマスターのUI特徴:
-  - 深い紫〜藍色のグラデーション背景
-  - 白/クリーム色のカード型パネル + ゴールドの縁取り
-  - ボタンは角丸矩形（ピルではない）、立体感のあるグラデーション
-  - ゴールドの細い装飾ライン
-  - カード枠は金/ブラスのメタリックな質感
+本家学園アイドルマスターのUI特徴を反映:
+  - 白ベースの背景に自然なソフトシャドウ（真っ黒ではなく青みグレーの影）
+  - すりガラス（グラスモーフィズム）風の半透明パネル + 白い縁でガラスの厚みを表現
+  - フラット2.0：角丸を基調にグラデーションを多用
+  - パラメータ/アクセントは青(C)・ピンク(M)・黄(Y)の3色
+  - 大きめの単色アイコン、装飾は最小限
 """
 import math
 from PIL import Image, ImageDraw, ImageFilter
 
 # =============================================================================
-# カラーパレット
+# カラーパレット（白ベース + すりガラス + CMY）
 # =============================================================================
-C_BG_DEEP      = (18, 10, 50)     # 最深背景
-C_BG_MID        = (38, 22, 78)    # 中間背景
-C_PANEL_FILL   = (248, 245, 255)  # 白パネル地
-C_PANEL_BORDER = (150, 130, 195)  # パネル縁
-C_GOLD         = (210, 165, 60)   # ゴールド
-C_GOLD_BRIGHT  = (245, 205, 100)  # 明ゴールド
-C_GOLD_LIGHT   = (255, 225, 150)  # ハイライトゴールド
-C_GOLD_DIM     = (155, 115, 45)   # 暗ゴールド
-C_HEADER_DEEP  = (22, 10, 55)     # ヘッダー背景
-C_SLOT_BG      = (22, 14, 48)     # スロット背景
-C_SLOT_DECK_BG = (18, 10, 40)     # デッキ側
-C_SLOT_FRAME   = (190, 155, 80)   # スロット枠
-C_SLOT_HOV     = (250, 215, 110)  # ホバー発光
-C_SHADOW       = (8, 4, 24)
-C_TEXT_DARK    = (50, 42, 65)
-C_BTN_GREEN    = (80, 170, 100)
-C_BTN_GRAY     = (125, 118, 148)
-C_BTN_RED      = (220, 105, 90)
-C_ICON_FOCUS   = (255, 200, 80)
-C_ICON_GOOD    = (255, 135, 70)
-C_ICON_GREAT   = (255, 70, 110)
-C_TOOLTIP_BG   = (252, 250, 255)
-C_TOOLTIP_BD   = (175, 160, 210)
+# 白/ガラス
+C_PANEL_FILL    = (255, 255, 255)   # 純白パネル地
+C_PANEL_FILL2   = (245, 248, 253)   # わずかに青みの白（グラデ下端）
+C_GLASS_TINT_T  = (255, 255, 255)   # すりガラス上（ほぼ白）
+C_GLASS_TINT_B  = (240, 244, 252)   # すりガラス下（淡い青白）
+C_WHITE_EDGE    = (255, 255, 255)   # ガラスの白い厚み枠
+C_EDGE_SOFT     = (223, 226, 238)   # 外縁の淡いグレーラベンダー
+C_SHADOW        = (58, 70, 110)     # 影（真っ黒を避け青みグレー）
+
+# CMY アクセント（青・ピンク・黄）
+C_CYAN          = (58, 178, 236)
+C_CYAN_DK       = (38, 150, 212)
+C_PINK          = (242, 96, 152)
+C_PINK_DK       = (214, 72, 128)
+C_YELLOW        = (248, 196, 66)
+C_YELLOW_DK     = (226, 168, 40)
+
+# スロット
+C_SLOT_BG       = (255, 255, 255)   # 一覧側 白
+C_SLOT_DECK_BG  = (243, 247, 253)   # デッキ側 淡い青白
+C_SLOT_FRAME    = (214, 219, 233)   # 通常枠 淡いラベンダーグレー
+C_SLOT_HOV      = C_PINK            # ホバー発光 ピンク
+
+# ボタン（白テキストが乗る前提の彩度）
+C_BTN_CONFIRM   = C_PINK            # 確定 = ピンク（主要CTA）
+C_BTN_RESET     = (150, 158, 182)   # 全削除 = グレーブルー
+C_BTN_CANCEL    = (120, 127, 150)   # キャンセル = グレー
+
+# バフアイコン（意味色をCMYに整理: 集中=青 / 好調=黄 / 絶好調=ピンク）
+C_ICON_FOCUS    = C_CYAN
+C_ICON_GOOD     = C_YELLOW
+C_ICON_GREAT    = C_PINK
+
+# ツールチップ
+C_TOOLTIP_BG    = (255, 255, 255)
+C_TOOLTIP_BD    = (226, 228, 240)
 
 SCALE = 3
 TEX = {
@@ -79,77 +92,67 @@ def blur_shadow(w, h, radius, fill_color, blur_radius):
                         radius=radius, fill=fill_color)
     return layer.filter(ImageFilter.GaussianBlur(blur_radius))
 
+def cmy_accent_line(d, x0, x1, y, thickness, radius=2):
+    """青→ピンク→黄 の3分割アクセントライン（学マスのCMYパラメータ色）"""
+    span = x1 - x0
+    seg = span // 3
+    d.rounded_rectangle((x0, y, x0 + seg, y + thickness), radius=radius, fill=C_CYAN)
+    d.rectangle((x0 + seg, y, x0 + seg * 2, y + thickness), fill=C_PINK)
+    d.rounded_rectangle((x0 + seg * 2, y, x1, y + thickness), radius=radius, fill=C_YELLOW)
+
 # =============================================================================
 # 生成関数
 # =============================================================================
 
 def gen_panel():
-    """デッキ編成画面 背景パネル"""
+    """デッキ編成画面 背景パネル（白いすりガラスカード）"""
     w, h = TEX["panel"]
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    m, r = 24, 48
+    m, r = 30, 46
 
-    # 影
-    sh = blur_shadow(w - m * 2, h - m * 2, r, (*C_SHADOW, 70), 20)
+    # ソフトシャドウ（青みグレー、広く淡く）
+    sh = blur_shadow(w - m * 2, h - m * 2, r, (*C_SHADOW, 60), 22)
     img.paste(sh, (m - sh.width // 2 + (w - m * 2) // 2,
                     m - sh.height // 2 + (h - m * 2) // 2), sh)
 
-    # 外枠背景 → 深紫グラデーション
-    bg = gradient_vertical(w - m * 2, h - m * 2, C_BG_DEEP, C_BG_MID)
-    img.paste(bg, (m, m), rounded_rect_mask(bg.size, r))
+    # すりガラス本体（上ほぼ白 → 下 淡い青白のグラデ）
+    bg = gradient_vertical(w - m * 2, h - m * 2, C_GLASS_TINT_T, C_GLASS_TINT_B)
+    mask = rounded_rect_mask(bg.size, r)
+    img.paste(bg, (m, m), mask)
 
-    # 内側白パネル
-    im = 50
-    iw, ih = w - im * 2, h - im * 2 - 16
-    inner = Image.new("RGBA", (iw, ih), (0, 0, 0, 0))
-    idraw = ImageDraw.Draw(inner)
-    ir = 34
+    # ガラスの厚みを表す内側の白いハイライト枠 + 淡い外縁
+    d.rounded_rectangle((m, m, w - m - 1, h - m - 1), radius=r,
+                        outline=(*C_EDGE_SOFT, 255), width=3)
+    d.rounded_rectangle((m + 4, m + 4, w - m - 5, h - m - 5), radius=r - 4,
+                        outline=(255, 255, 255, 210), width=3)
 
-    # 内パネル影
-    ish = blur_shadow(iw, ih, ir, (*C_SHADOW, 35), 10)
-    inner.paste(ish, (-ish.width // 2 + iw // 2, -ish.height // 2 + ih // 2), ish)
-
-    # 白地 + 紫縁 + ゴールドライン
-    idraw.rounded_rectangle((0, 0, iw - 1, ih - 1), radius=ir,
-                            fill=C_PANEL_FILL, outline=C_PANEL_BORDER, width=3)
-    idraw.rounded_rectangle((10, 8, iw - 11, 12), radius=2, fill=C_GOLD)
-
-    img.paste(inner, (im, im + 8), inner)
-
-    # 四隅のゴールドアクセント
-    for cx, cy in [(m + 44, m + 44), (w - m - 44, m + 44),
-                   (m + 44, h - m - 44), (w - m - 44, h - m - 44)]:
-        d.ellipse((cx - 7, cy - 7, cx + 7, cy + 7), fill=C_GOLD_BRIGHT)
-        d.ellipse((cx - 3, cy - 3, cx + 3, cy + 3), fill=C_GOLD_LIGHT)
+    # 上部にCMYアクセントライン
+    cmy_accent_line(d, m + 60, w - m - 60, m + 30, 9, radius=4)
 
     return img
 
 
 def gen_header():
-    """タイトルヘッダー"""
+    """タイトルヘッダー（白い角丸バー + CMY下線）"""
     w, h = TEX["header"]
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    r = 36
+    r = 40
 
-    # 影
-    sh = blur_shadow(w, h, r, (*C_SHADOW, 95), 14)
+    # ソフトシャドウ
+    sh = blur_shadow(w - 24, h - 24, r, (*C_SHADOW, 70), 14)
     img.paste(sh, (-sh.width // 2 + w // 2, -sh.height // 2 + h // 2), sh)
 
-    # 本体
-    bg = gradient_vertical(w, h, C_HEADER_DEEP, C_BG_MID)
-    img.paste(bg, (0, 0), rounded_rect_mask((w, h), r))
+    # 白本体
+    d.rounded_rectangle((12, 12, w - 13, h - 13), radius=r, fill=C_PANEL_FILL,
+                        outline=C_EDGE_SOFT, width=3)
+    # 上端の白ハイライト（ガラス厚み）
+    d.rounded_rectangle((18, 18, w - 19, h // 2), radius=r - 8,
+                        outline=(255, 255, 255, 180), width=2)
 
-    # ゴールド装飾
-    d.rounded_rectangle((36, 16, w - 36, 24), radius=4, fill=C_GOLD_DIM)
-    d.rounded_rectangle((36, h - 24, w - 36, h - 16), radius=4, fill=C_GOLD_DIM)
-    d.rounded_rectangle((w // 2 - 140, 32, w // 2 + 140, 37), radius=2, fill=C_GOLD_BRIGHT)
-
-    # 左右に小さいダイヤ型のアクセント
-    for ox in [48, w - 48]:
-        for oy in [38, h - 38]:
-            d.regular_polygon((ox, oy, 5), 4, rotation=45, fill=C_GOLD_BRIGHT)
+    # 下部にCMYアクセントライン
+    cmy_accent_line(d, 60, w - 60, h - 34, 10, radius=4)
 
     return img
 
@@ -163,33 +166,32 @@ def gen_slot(base_color, frame_color, glow_color=None):
     inner = int(w * (1 - 48 / 312 * 2))
     inner = inner - inner % 2
     offset = (w - inner) // 2
-    r = 18
+    r = 20
 
-    # 影
-    sh = blur_shadow(inner, inner, r, (*C_SHADOW, 110), 8)
+    # ソフトシャドウ（薄め）
+    sh = blur_shadow(inner, inner, r, (*C_SHADOW, 70), 9)
     img.paste(sh, (offset - sh.width // 2 + inner // 2,
                     offset - sh.height // 2 + inner // 2), sh)
 
-    # 本体背景
+    # 本体背景（白 / 淡い青白）
     d.rounded_rectangle((offset, offset, offset + inner - 1, offset + inner - 1),
-                        radius=r, fill=base_color)
+                        radius=r, fill=base_color, outline=frame_color, width=3)
 
-    # 金枠（外側）
-    d.rounded_rectangle((offset - 2, offset - 2, offset + inner + 1, offset + inner + 1),
-                        radius=r + 2, outline=frame_color, width=3)
-
-    # 内側アクセント線
+    # 内側の白ハイライト（ガラス厚み）
     d.rounded_rectangle((offset + 5, offset + 5, offset + inner - 6, offset + inner - 6),
-                        radius=r - 6, outline=(*frame_color, 80), width=1)
+                        radius=r - 5, outline=(255, 255, 255, 170), width=2)
 
-    # ホバー発光
+    # ホバー発光（ピンクのソフトグロー + 実線枠）
     if glow_color:
-        gl = Image.new("RGBA", (inner + 50, inner + 50), (0, 0, 0, 0))
+        gl = Image.new("RGBA", (inner + 60, inner + 60), (0, 0, 0, 0))
         gd = ImageDraw.Draw(gl)
-        gd.rounded_rectangle((25, 25, inner + 24, inner + 24), radius=r + 6,
-                             outline=glow_color, width=5)
-        gl = gl.filter(ImageFilter.GaussianBlur(8))
-        img.paste(gl, (offset - 25, offset - 25), gl)
+        gd.rounded_rectangle((30, 30, inner + 29, inner + 29), radius=r + 8,
+                             outline=(*glow_color, 230), width=7)
+        gl = gl.filter(ImageFilter.GaussianBlur(9))
+        img.paste(gl, (offset - 30, offset - 30), gl)
+        # くっきりした内枠も重ねる
+        d.rounded_rectangle((offset, offset, offset + inner - 1, offset + inner - 1),
+                            radius=r, outline=glow_color, width=3)
 
     return img
 
@@ -203,71 +205,54 @@ def gen_pill(color):
     mx = 12   # マージン
     iw, ih = w - mx * 2, h - mx * 2
     cr, cg, cb = color
-    radius = 28  # 角丸半径（表示で約9.3px）
+    radius = 30
 
-    # 影
-    sh = blur_shadow(iw, ih, radius, (*C_SHADOW, 100), 10)
+    # ソフトシャドウ
+    sh = blur_shadow(iw, ih, radius, (*C_SHADOW, 85), 11)
     img.paste(sh, (mx - sh.width // 2 + iw // 2,
                     mx - sh.height // 2 + ih // 2), sh)
 
-    # 本体グラデーション: 上端ハイライト → 徐々に暗く
-    for y in range(mx, mx + ih):
-        t = (y - mx) / (ih - 1) if ih > 1 else 0
-        if t < 0.22:
-            hf = 1.0 + (0.22 - t) / 0.22 * 0.30
-        else:
-            hf = 1.0 - (t - 0.22) * 0.35
+    # 本体グラデ（上明るめ → 下やや暗め。フラット2.0のなだらかグラデ）
+    body = Image.new("RGBA", (iw, ih), (0, 0, 0, 0))
+    for y in range(ih):
+        t = y / (ih - 1) if ih > 1 else 0
+        hf = 1.08 - 0.20 * t   # 上1.08倍 → 下0.88倍
         r2 = min(255, max(0, int(cr * hf)))
         g2 = min(255, max(0, int(cg * hf)))
         b2 = min(255, max(0, int(cb * hf)))
-        for x in range(mx + radius, w - mx - radius):
-            img.putpixel((x, y), (r2, g2, b2, 255))
+        for x in range(iw):
+            body.putpixel((x, y), (r2, g2, b2, 255))
+    img.paste(body, (mx, mx), rounded_rect_mask((iw, ih), radius))
 
-    # 四隅
-    for y in range(mx, mx + ih):
-        t = (y - mx) / (ih - 1) if ih > 1 else 0
-        if t < 0.22:
-            hf = 1.0 + (0.22 - t) / 0.22 * 0.30
-        else:
-            hf = 1.0 - (t - 0.22) * 0.35
-        r2 = min(255, max(0, int(cr * hf)))
-        g2 = min(255, max(0, int(cg * hf)))
-        b2 = min(255, max(0, int(cb * hf)))
-        for cx in [mx + radius, w - mx - radius - 1]:
-            for ox in range(-radius, radius + 1):
-                px = cx + ox
-                if px < mx or px >= w - mx:
-                    continue
-                dy = y - (mx + ih // 2)
-                if ox * ox + dy * dy <= radius * radius:
-                    img.putpixel((px, y), (r2, g2, b2, 255))
-
-    # 上端ハイライト
+    # 上端の白ハイライト（つやのある立体感）
     hl = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     hld = ImageDraw.Draw(hl)
-    hld.rounded_rectangle((mx + 6, mx + 3, w - mx - 7, mx + ih // 3),
-                           radius=radius - 8, fill=(255, 255, 255, 30))
+    hld.rounded_rectangle((mx + 8, mx + 4, w - mx - 9, mx + ih // 2 - 2),
+                           radius=radius - 8, fill=(255, 255, 255, 55))
     img.paste(hl, (0, 0), hl)
 
-    # 縁取り
+    # 縁取り（明るめの同系色）
     d.rounded_rectangle((mx, mx, w - mx - 1, h - mx - 1), radius=radius,
-                        outline=(min(255, cr + 35), min(255, cg + 35), min(255, cb + 35), 255),
+                        outline=(min(255, cr + 30), min(255, cg + 30), min(255, cb + 30), 255),
                         width=2)
 
     return img
 
 
 def gen_buff_icon(fg_color, shape_fn):
-    """バフアイコン"""
+    """バフアイコン（白い円地 + CMY単色シェイプ + 同色リング。ドット絵調）"""
     w, h = TEX["buff_icon"]
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     cx, cy = w // 2, h // 2
     rad = 34
 
-    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), fill=(*C_SHADOW, 200))
-    shape_fn(d, cx, cy, rad - 8, fg_color)
-    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), outline=fg_color, width=3)
+    # 白い円地（学マスの白ベース）
+    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), fill=(255, 255, 255, 255))
+    # 単色シェイプ
+    shape_fn(d, cx, cy, rad - 9, fg_color)
+    # 同色リング
+    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), outline=fg_color, width=4)
 
     return img
 
@@ -315,29 +300,32 @@ def great_shape(d, cx, cy, r, color):
 
 
 def gen_tooltip_panel():
-    """カード詳細ツールチップ"""
+    """カード詳細ツールチップ（白いすりガラス吹き出し）"""
     w, h = TEX["tooltip"]
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    r = 26
+    r = 28
     body_h = int(h * (480 / 522))
 
-    # 影
-    sh = blur_shadow(w, body_h, r, (*C_SHADOW, 65), 9)
+    # ソフトシャドウ
+    sh = blur_shadow(w - 16, body_h, r, (*C_SHADOW, 55), 10)
     img.paste(sh, (-sh.width // 2 + w // 2, -sh.height // 2 + body_h // 2), sh)
 
     # 本体
     d.rounded_rectangle((0, 0, w - 1, body_h - 1), radius=r,
                         fill=C_TOOLTIP_BG, outline=C_TOOLTIP_BD, width=2)
+    # 内側の白ハイライト枠
+    d.rounded_rectangle((5, 5, w - 6, body_h - 6), radius=r - 5,
+                        outline=(255, 255, 255, 190), width=2)
 
     # しっぽ
     cx, tw = w // 2, 22
     d.polygon([(cx - tw, body_h - 3), (cx + tw, body_h - 3), (cx, h - 1)],
               fill=C_TOOLTIP_BG, outline=C_TOOLTIP_BD)
-    d.rectangle((cx - tw, body_h - 5, cx + tw, body_h + 1), fill=C_TOOLTIP_BG)
+    d.rectangle((cx - tw + 1, body_h - 6, cx + tw - 1, body_h + 1), fill=C_TOOLTIP_BG)
 
-    # ゴールド線
-    d.rounded_rectangle((18, 9, w - 19, 13), radius=2, fill=C_GOLD)
+    # CMYアクセントライン（上部）
+    cmy_accent_line(d, 20, w - 20, 11, 6, radius=3)
 
     return img
 
@@ -350,7 +338,7 @@ OUT_DIR = "src/main/resources/assets/gakumas_produce/textures/gui"
 def main():
     import os
     os.makedirs(OUT_DIR, exist_ok=True)
-    print("Generating GUI textures (学マス本家寄せ v2)...\n")
+    print("Generating GUI textures (学マス風 v3: 白ベース + すりガラス + CMY)...\n")
 
     print("  deck_editor_panel.png ...", end=" ")
     gen_panel().save(f"{OUT_DIR}/deck_editor_panel.png")
@@ -365,27 +353,27 @@ def main():
     print("OK")
 
     print("  card_slot_deck.png ...", end=" ")
-    gen_slot(C_SLOT_DECK_BG, (100, 85, 155)).save(f"{OUT_DIR}/card_slot_deck.png")
+    gen_slot(C_SLOT_DECK_BG, (200, 210, 228)).save(f"{OUT_DIR}/card_slot_deck.png")
     print("OK")
 
     print("  card_slot_hover.png ...", end=" ")
-    gen_slot(C_SLOT_BG, C_GOLD_BRIGHT, glow_color=C_SLOT_HOV).save(f"{OUT_DIR}/card_slot_hover.png")
+    gen_slot(C_SLOT_BG, C_PINK, glow_color=C_SLOT_HOV).save(f"{OUT_DIR}/card_slot_hover.png")
     print("OK")
 
     print("  button_confirm.png ...", end=" ")
-    gen_pill(C_BTN_GREEN).save(f"{OUT_DIR}/button_confirm.png")
+    gen_pill(C_BTN_CONFIRM).save(f"{OUT_DIR}/button_confirm.png")
     print("OK")
 
     print("  button_reset.png ...", end=" ")
-    gen_pill(C_BTN_GRAY).save(f"{OUT_DIR}/button_reset.png")
+    gen_pill(C_BTN_RESET).save(f"{OUT_DIR}/button_reset.png")
     print("OK")
 
     print("  button_cancel.png ...", end=" ")
-    gen_pill(C_BTN_RED).save(f"{OUT_DIR}/button_cancel.png")
+    gen_pill(C_BTN_CANCEL).save(f"{OUT_DIR}/button_cancel.png")
     print("OK")
 
     print("  button_pill.png ...", end=" ")
-    gen_pill(C_BTN_GRAY).save(f"{OUT_DIR}/button_pill.png")
+    gen_pill(C_BTN_RESET).save(f"{OUT_DIR}/button_pill.png")
     print("OK")
 
     print("  icon_focus.png ...", end=" ")
