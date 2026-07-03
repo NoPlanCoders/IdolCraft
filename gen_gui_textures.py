@@ -398,17 +398,10 @@ def main():
     gen_pill(C_BTN_RESET).save(f"{OUT_DIR}/button_pill.png")
     print("OK")
 
-    print("  icon_focus.png ...", end=" ")
-    gen_buff_icon(C_ICON_FOCUS, focus_shape).save(f"{OUT_DIR}/icon_focus.png")
-    print("OK")
-
-    print("  icon_good_condition.png ...", end=" ")
-    gen_buff_icon(C_ICON_GOOD, good_shape).save(f"{OUT_DIR}/icon_good_condition.png")
-    print("OK")
-
-    print("  icon_great_condition.png ...", end=" ")
-    gen_buff_icon(C_ICON_GREAT, great_shape).save(f"{OUT_DIR}/icon_great_condition.png")
-    print("OK")
+    # ※ バフアイコン（icon_focus / icon_good_condition / icon_great_condition）は
+    #   本家学マスの実アイコンを背景透過して使用しているため、このスクリプトでは生成しない
+    #   （再生成すると上書きしてしまうので gen_buff_icon 呼び出しを無効化）。
+    #   関連: gen_buff_icon / focus_shape / good_shape / great_shape は参考用に残置。
 
     print("  tooltip_panel.png ...", end=" ")
     gen_tooltip_panel().save(f"{OUT_DIR}/tooltip_panel.png")

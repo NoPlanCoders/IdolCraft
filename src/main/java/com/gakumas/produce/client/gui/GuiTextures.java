@@ -36,7 +36,7 @@ public final class GuiTextures {
     public static final int SLOT_TEX = 312;
     public static final int PILL_TEX_W = 702;
     public static final int PILL_TEX_H = 234;
-    public static final int BUFF_ICON_TEX = 96;
+    public static final int BUFF_ICON_TEX = 43;
     public static final int TOOLTIP_PANEL_TEX_W = 720;
     public static final int TOOLTIP_PANEL_TEX_H = 522;
     /** テクスチャ全体の高さのうち、吹き出し本体（角丸矩形部分、しっぽを除く）が占める割合 */
