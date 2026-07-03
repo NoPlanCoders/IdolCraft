@@ -16,7 +16,7 @@ import java.util.Locale;
 
 /**
  * 手帳所持中のHUDオーバーレイ v2。
- * 左端: バフアイコン（半透明ダークパネル上に金縁アイコン）
+ * 左端: バフアイコン（本家学マスの実アイコンをそのまま表示）
  * 下部: 手札（選択中カードはゴールド発光＋呼吸アニメーション）
  */
 public class GakumasHudOverlay implements IGuiOverlay {
@@ -37,11 +37,11 @@ public class GakumasHudOverlay implements IGuiOverlay {
     }
 
     // ── バフ表示（本家学マス風: 浮遊ダイヤ + 横にテキスト） ──
-    private static final int BUF_ICON = 26;
+    private static final int BUF_ICON = 18;
 
     private void renderBuffColumn(GuiGraphics g, int sh) {
-        int x = 6, gap = 32;
-        int y = sh / 2 - 48;
+        int x = 6, gap = 23;
+        int y = sh / 2 - 34;
         int f = ClientDeckState.getFocusStacks();
         int gd = ClientDeckState.getGoodTicks();
         int gr = ClientDeckState.getGreatTicks();
@@ -57,7 +57,7 @@ public class GakumasHudOverlay implements IGuiOverlay {
         g.blit(icon, x, y, BUF_ICON, BUF_ICON, 0f, 0f, tex, tex, tex, tex);
         // テキスト（白＋影で世界背景に対して視認性確保）
         g.drawString(Minecraft.getInstance().font, Component.literal(val),
-                x + BUF_ICON + 3, y + BUF_ICON / 2 - 4, 0xFFFFFFFF, true);
+                x + BUF_ICON + 3, y + (BUF_ICON - 8) / 2, 0xFFFFFFFF, true);
     }
 
     private static String fmt(int ticks) {
