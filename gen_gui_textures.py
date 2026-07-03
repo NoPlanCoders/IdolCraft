@@ -44,10 +44,10 @@ C_BTN_CONFIRM   = C_PINK            # 確定 = ピンク（主要CTA）
 C_BTN_RESET     = (150, 158, 182)   # 全削除 = グレーブルー
 C_BTN_CANCEL    = (120, 127, 150)   # キャンセル = グレー
 
-# バフアイコン（意味色をCMYに整理: 集中=青 / 好調=黄 / 絶好調=ピンク）
+# バフアイコン（本家準拠でバフは青系に統一。区別はグリフ形状で行う）
 C_ICON_FOCUS    = C_CYAN
-C_ICON_GOOD     = C_YELLOW
-C_ICON_GREAT    = C_PINK
+C_ICON_GOOD     = C_CYAN
+C_ICON_GREAT    = C_CYAN
 
 # ツールチップ
 C_TOOLTIP_BG    = (255, 255, 255)
@@ -284,45 +284,41 @@ def gen_buff_icon(base_color, shape_fn):
 
 
 def focus_shape(d, cx, cy, r, color):
-    pts = []
-    for i in range(5):
-        a = math.pi / 2 + i * 2 * math.pi / 5
-        o_x, o_y = cx + r * math.cos(a), cy - r * math.sin(a)
-        pts.append((o_x, o_y))
-        ia = a + math.pi / 5
-        i_x, i_y = cx + r * 0.4 * math.cos(ia), cy - r * 0.4 * math.sin(ia)
-        pts.append((i_x, i_y))
-    d.polygon(pts, fill=color)
+    """集中 = 白い宝石（ブリリアントカット風シルエット + ファセット線）。本家の青いジェムを踏襲。"""
+    tw = int(r * 0.50)        # テーブル面の半幅
+    top = cy - int(r * 0.62)
+    shy = cy - int(r * 0.16)  # ガードル（肩）のY
+    sw = int(r * 0.92)        # 肩の半幅
+    bot = cy + int(r * 0.98)  # キューレット（底の尖り）
+    d.polygon([(cx - tw, top), (cx + tw, top), (cx + sw, shy),
+               (cx, bot), (cx - sw, shy)], fill=color)
+    # ファセット線（淡いシアンで宝石の割れ目を表現）
+    facet = (150, 222, 248)
+    hw = int(sw * 0.5)
+    d.line([(cx - sw, shy), (cx + sw, shy)], fill=facet, width=2)   # ガードル線
+    d.line([(cx - tw, top), (cx - hw, shy)], fill=facet, width=2)
+    d.line([(cx + tw, top), (cx + hw, shy)], fill=facet, width=2)
+    d.line([(cx - hw, shy), (cx, bot)], fill=facet, width=2)
+    d.line([(cx + hw, shy), (cx, bot)], fill=facet, width=2)
+
+
+def _up_chevron(d, cx, cy, r, color, tip_y):
+    """上向きシェブロン '^' を太線で描く"""
+    w = int(r * 0.85)
+    t = max(3, int(r * 0.34))
+    d.line([(cx - w, tip_y + w), (cx, tip_y), (cx + w, tip_y + w)],
+           fill=color, width=t, joint="curve")
 
 
 def good_shape(d, cx, cy, r, color):
-    pts = [
-        (cx, cy - r),
-        (cx + r, cy + int(r * 0.3)),
-        (cx + int(r * 0.35), cy + int(r * 0.3)),
-        (cx + int(r * 0.35), cy + r),
-        (cx - int(r * 0.35), cy + r),
-        (cx - int(r * 0.35), cy + int(r * 0.3)),
-        (cx - r, cy + int(r * 0.3)),
-    ]
-    d.polygon(pts, fill=color)
+    """好調 = 上向きシェブロン1つ"""
+    _up_chevron(d, cx, cy, r, color, cy - int(r * 0.28))
 
 
 def great_shape(d, cx, cy, r, color):
-    offset = int(r * 0.45)
-    size = int(r * 0.55)
-    def arrow(oy):
-        return [
-            (cx, oy - size),
-            (cx + size, oy),
-            (cx + int(size * 0.35), oy),
-            (cx + int(size * 0.35), oy + offset + size),
-            (cx - int(size * 0.35), oy + offset + size),
-            (cx - int(size * 0.35), oy),
-            (cx - size, oy),
-        ]
-    d.polygon(arrow(cy - offset), fill=color)
-    d.polygon(arrow(cy + offset), fill=color)
+    """絶好調 = 上向きシェブロン2つ（好調の強化）"""
+    _up_chevron(d, cx, cy, r, color, cy - int(r * 0.62))
+    _up_chevron(d, cx, cy, r, color, cy + int(r * 0.04))
 
 
 def gen_tooltip_panel():
