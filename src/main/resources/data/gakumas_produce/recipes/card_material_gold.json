@@ -11,11 +11,11 @@
       "item": "minecraft:paper"
     },
     {
-      "item": "minecraft:iron_ingot"
+      "item": "minecraft:gold_ingot"
     }
   ],
   "result": {
-    "item": "gakumas_produce:card_pack_silver",
+    "item": "gakumas_produce:card_material_gold",
     "count": 1
   }
 }

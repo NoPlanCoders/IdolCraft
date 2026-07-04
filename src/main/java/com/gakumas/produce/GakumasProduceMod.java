@@ -2,6 +2,7 @@ package com.gakumas.produce;
 
 import com.gakumas.produce.card.impl.ProduceCards;
 import com.gakumas.produce.network.NetworkHandler;
+import com.gakumas.produce.registry.ModBlocks;
 import com.gakumas.produce.registry.ModCreativeTab;
 import com.gakumas.produce.registry.ModItems;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -18,6 +19,7 @@ public class GakumasProduceMod {
     public GakumasProduceMod() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        ModBlocks.register(modBus);
         ModItems.register(modBus);
         ModCreativeTab.register(modBus);
 

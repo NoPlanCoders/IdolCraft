@@ -2,9 +2,10 @@ package com.gakumas.produce.registry;
 
 import com.gakumas.produce.GakumasProduceMod;
 import com.gakumas.produce.card.CardRarity;
-import com.gakumas.produce.item.CardPackItem;
+import com.gakumas.produce.item.CardMaterialItem;
 import com.gakumas.produce.item.HandbookItem;
 import com.gakumas.produce.item.ProduceCardItem;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -19,15 +20,19 @@ public final class ModItems {
     public static final RegistryObject<Item> PRODUCE_HANDBOOK = ITEMS.register("produce_handbook",
             () -> new HandbookItem(new Item.Properties().stacksTo(1)));
 
-    // ---- レア度別カードパック（右クリックで開封して該当レアのカードをランダム入手） ----
-    public static final RegistryObject<Item> PACK_WHITE = ITEMS.register("card_pack_white",
-            () -> new CardPackItem(new Item.Properties(), CardRarity.WHITE));
-    public static final RegistryObject<Item> PACK_SILVER = ITEMS.register("card_pack_silver",
-            () -> new CardPackItem(new Item.Properties(), CardRarity.SILVER));
-    public static final RegistryObject<Item> PACK_GOLD = ITEMS.register("card_pack_gold",
-            () -> new CardPackItem(new Item.Properties(), CardRarity.GOLD));
-    public static final RegistryObject<Item> PACK_RAINBOW = ITEMS.register("card_pack_rainbow",
-            () -> new CardPackItem(new Item.Properties(), CardRarity.RAINBOW));
+    // ---- レア度別カード素材（スキルカード作業台で同レアの任意カードと引き換える） ----
+    public static final RegistryObject<Item> MATERIAL_WHITE = ITEMS.register("card_material_white",
+            () -> new CardMaterialItem(new Item.Properties(), CardRarity.WHITE));
+    public static final RegistryObject<Item> MATERIAL_SILVER = ITEMS.register("card_material_silver",
+            () -> new CardMaterialItem(new Item.Properties(), CardRarity.SILVER));
+    public static final RegistryObject<Item> MATERIAL_GOLD = ITEMS.register("card_material_gold",
+            () -> new CardMaterialItem(new Item.Properties(), CardRarity.GOLD));
+    public static final RegistryObject<Item> MATERIAL_RAINBOW = ITEMS.register("card_material_rainbow",
+            () -> new CardMaterialItem(new Item.Properties(), CardRarity.RAINBOW));
+
+    // ---- スキルカード作業台ブロックのアイテム ----
+    public static final RegistryObject<Item> CARD_WORKSHOP = ITEMS.register("card_workshop",
+            () -> new BlockItem(com.gakumas.produce.registry.ModBlocks.CARD_WORKSHOP.get(), new Item.Properties()));
 
     // ---- 初期実装6カード ----
     public static final RegistryObject<Item> CARD_APPEAL_BASIC = ITEMS.register("card_appeal_basic",

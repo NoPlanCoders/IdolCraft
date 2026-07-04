@@ -23,10 +23,11 @@ public final class ModCreativeTab {
                     .icon(() -> new ItemStack(ModItems.PRODUCE_HANDBOOK.get()))
                     .displayItems((params, output) -> {
                         output.accept(ModItems.PRODUCE_HANDBOOK.get());
-                        output.accept(ModItems.PACK_WHITE.get());
-                        output.accept(ModItems.PACK_SILVER.get());
-                        output.accept(ModItems.PACK_GOLD.get());
-                        output.accept(ModItems.PACK_RAINBOW.get());
+                        output.accept(ModItems.CARD_WORKSHOP.get());
+                        output.accept(ModItems.MATERIAL_WHITE.get());
+                        output.accept(ModItems.MATERIAL_SILVER.get());
+                        output.accept(ModItems.MATERIAL_GOLD.get());
+                        output.accept(ModItems.MATERIAL_RAINBOW.get());
                         // CardRegistry に登録された全カードを自動的にタブへ並べる。
                         // 新カード追加時にここを書き換える必要がなくなる（拡張性重視）。
                         for (CardDefinition def : CardRegistry.all()) {

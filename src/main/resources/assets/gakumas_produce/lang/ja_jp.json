@@ -83,8 +83,9 @@
   "item.gakumas_produce.card_national_idol": "国民的アイドル",
   "item.gakumas_produce.card_endless_applause": "鳴り止まない拍手",
   "item.gakumas_produce.card_natural_talent": "天賦の才",
-  "item.gakumas_produce.card_pack_white": "白カードパック",
-  "item.gakumas_produce.card_pack_silver": "銀カードパック",
-  "item.gakumas_produce.card_pack_gold": "金カードパック",
-  "item.gakumas_produce.card_pack_rainbow": "虹カードパック"
+  "item.gakumas_produce.card_material_white": "白カードの素材",
+  "item.gakumas_produce.card_material_silver": "銀カードの素材",
+  "item.gakumas_produce.card_material_gold": "金カードの素材",
+  "item.gakumas_produce.card_material_rainbow": "虹カードの素材",
+  "block.gakumas_produce.card_workshop": "スキルカード作業台"
 }

@@ -3,6 +3,7 @@ package com.gakumas.produce.network;
 import com.gakumas.produce.GakumasProduceMod;
 import com.gakumas.produce.network.packet.ResetDeckPacket;
 import com.gakumas.produce.network.packet.SelectCardPacket;
+import com.gakumas.produce.network.packet.CraftCardPacket;
 import com.gakumas.produce.network.packet.SetDeckPacket;
 import com.gakumas.produce.network.packet.SyncDeckPacket;
 import com.gakumas.produce.network.packet.SyncOwnedCardsPacket;
@@ -31,5 +32,6 @@ public final class NetworkHandler {
         CHANNEL.registerMessage(id++, SyncDeckPacket.class, SyncDeckPacket::encode, SyncDeckPacket::decode, SyncDeckPacket::handle);
         CHANNEL.registerMessage(id++, SetDeckPacket.class, SetDeckPacket::encode, SetDeckPacket::decode, SetDeckPacket::handle);
         CHANNEL.registerMessage(id++, SyncOwnedCardsPacket.class, SyncOwnedCardsPacket::encode, SyncOwnedCardsPacket::decode, SyncOwnedCardsPacket::handle);
+        CHANNEL.registerMessage(id++, CraftCardPacket.class, CraftCardPacket::encode, CraftCardPacket::decode, CraftCardPacket::handle);
     }
 }
