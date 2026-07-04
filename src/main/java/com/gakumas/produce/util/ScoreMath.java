@@ -17,26 +17,33 @@ public final class ScoreMath {
 
     private ScoreMath() {}
 
+    public static int calculateDamage(int baseScore, BuffState buff, double goodConditionMultiplier) {
+        return (int) Math.ceil(applyBuffs(baseScore, buff, goodConditionMultiplier));
+    }
+
     public static int calculateDamage(int baseScore, BuffState buff) {
-        return (int) Math.ceil(applyBuffs(baseScore, buff));
+        return calculateDamage(baseScore, buff, 1.0);
     }
 
     public static float calculateOutgoingDamage(float baseDamage, BuffState buff) {
-        return (float) Math.ceil(applyBuffs(baseDamage, buff));
+        return (float) Math.ceil(applyBuffs(baseDamage, buff, 1.0));
     }
 
-    private static double applyBuffs(double baseValue, BuffState buff) {
+    private static double applyBuffs(double baseValue, BuffState buff, double goodConditionMultOverride) {
         double raw = baseValue + buff.getFocusStacks();
-        return raw * getDamageMultiplier(buff);
+        return raw * getDamageMultiplier(buff, goodConditionMultOverride);
     }
 
-    private static double getDamageMultiplier(BuffState buff) {
+    private static double getDamageMultiplier(BuffState buff, double customGoodMult) {
         if (buff.isGoodConditionActive()) {
             if (buff.isGreatConditionActive()) {
                 return 1.0 + 0.5 + 0.1 * buff.getGoodConditionTurnsAccumulated();
             }
-            return 1.5;
+            return (customGoodMult > 0) ? customGoodMult : 1.5;
         }
         return 1.0;
     }
+
+    // 好調効果2倍（ステージングの基本等）用の定数
+    public static final double GOOD_MULT_DOUBLE = 2.0;
 }

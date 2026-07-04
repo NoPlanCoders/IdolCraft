@@ -30,16 +30,16 @@ public final class ProduceCards {
 
     public static void registerAll() {
 
-        // 1. アピールの基本 (通常): コスト体力4。ターゲットに9の魔法ダメージ。
+        // 1. アピールの基本 (アクティブ): コスト体力4。パラメータ+13。
         CardRegistry.register(CardDefinition.builder(id("card_appeal_basic"), "アピールの基本", CardType.NORMAL)
-                .description("ターゲットに9のダメージ")
+                .description("パラメータ+13")
                 .hpCost(4)
-                .baseScore(9)
+                .baseScore(13)
                 .effect((player, deck) -> {
                     LivingEntity target = TargetingHelper.getLookTarget(player);
                     if (target != null) {
                         BuffState buff = deck.getBuffState();
-                        int damage = ScoreMath.calculateDamage(9, buff);
+                        int damage = ScoreMath.calculateDamage(13, buff);
                         target.hurt(player.level().damageSources().magic(), damage);
                     }
                 })
@@ -199,17 +199,18 @@ public final class ProduceCards {
                 })
                 .build());
 
-        // 13. ステージングの基本 (通常 / センス): コスト体力2。パラメータ+10（好調中のみ使用可）。
+        // 13. ステージングの基本 (アクティブ / センス): コスト2。好調2ターン以上で使用可。パラメータ+10（好調効果2倍）。
         CardRegistry.register(CardDefinition.builder(id("card_staging_basic"), "ステージングの基本", CardType.NORMAL)
-                .description("ダメージ+10")
+                .description("パラメータ+10（好調効果2倍）")
                 .hpCost(2)
                 .baseScore(10)
-                .usableWhen((player, deck) -> deck.getBuffState().getGoodConditionTurnsAccumulated() >= 2, "好調2ターン以上が必要")
+                .usableWhen((player, deck) -> deck.getBuffState().isGoodConditionActive(), "好調が必要")
                 .effect((player, deck) -> {
                     BuffState buff = deck.getBuffState();
                     LivingEntity target = TargetingHelper.getLookTarget(player);
                     if (target != null) {
-                        target.hurt(player.level().damageSources().magic(), ScoreMath.calculateDamage(10, buff));
+                        target.hurt(player.level().damageSources().magic(),
+                                ScoreMath.calculateDamage(10, buff, ScoreMath.GOOD_MULT_DOUBLE));
                     }
                 })
                 .build());
