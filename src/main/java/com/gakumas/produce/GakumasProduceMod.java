@@ -30,6 +30,7 @@ public class GakumasProduceMod {
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ProduceCards.registerAll();
+            com.gakumas.produce.card.impl.ProduceSenseCards.registerAll();
             NetworkHandler.register();
         });
     }

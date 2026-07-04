@@ -128,6 +128,35 @@ public class BuffState {
         setCustomCounter(BONUS_ACTION_KEY, 0);
     }
 
+    // ── 追加ドロー（効果解決後にまとめて山札から引く予約） ──
+    private static final String PENDING_DRAW_KEY = "pending_draw";
+    public int getPendingDraw() { return getCustomCounter(PENDING_DRAW_KEY); }
+    public void addPendingDraw(int n) { setCustomCounter(PENDING_DRAW_KEY, Math.max(0, getPendingDraw() + n)); }
+    public void clearPendingDraw() { setCustomCounter(PENDING_DRAW_KEY, 0); }
+
+    // ── 消費体力減少（残ターン数。>0 の間、カードの消費体力を軽減する） ──
+    private static final String COST_REDUCTION_KEY = "cost_reduction_turns";
+    public int getCostReductionTurns() { return getCustomCounter(COST_REDUCTION_KEY); }
+    public void addCostReductionTurns(int t) { setCustomCounter(COST_REDUCTION_KEY, Math.max(0, getCostReductionTurns() + t)); }
+    public void tickCostReductionTurn() {
+        int c = getCostReductionTurns();
+        if (c > 0) setCustomCounter(COST_REDUCTION_KEY, c - 1);
+    }
+
+    // ── 次に使うカードの効果を2回発動する残数（「国民的アイドル」等） ──
+    private static final String DOUBLE_NEXT_KEY = "double_next_cards";
+    public int getDoubleNextCards() { return getCustomCounter(DOUBLE_NEXT_KEY); }
+    public void addDoubleNextCards(int n) { setCustomCounter(DOUBLE_NEXT_KEY, Math.max(0, getDoubleNextCards() + n)); }
+    public void consumeDoubleNextCard() {
+        int c = getDoubleNextCards();
+        if (c > 0) setCustomCounter(DOUBLE_NEXT_KEY, c - 1);
+    }
+
+    // ── 継続パラメータ（ターン終了毎にこの値ぶんターゲットへダメージ。「至高のエンタメ」等） ──
+    private static final String PARAM_PER_TURN_KEY = "param_per_turn";
+    public int getParamPerTurn() { return getCustomCounter(PARAM_PER_TURN_KEY); }
+    public void addParamPerTurn(int n) { setCustomCounter(PARAM_PER_TURN_KEY, Math.max(0, getParamPerTurn() + n)); }
+
     /**
      * 毎Tick呼び出される時間経過処理。好調・絶好調をリアルタイムで減少させる。
      * 集中は減らさない（本家仕様通り、リセットまで永続）。

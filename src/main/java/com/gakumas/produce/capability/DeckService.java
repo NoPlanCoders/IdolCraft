@@ -5,10 +5,13 @@ import com.gakumas.produce.card.CardRegistry;
 import com.gakumas.produce.card.CardType;
 import com.gakumas.produce.util.AdvancementHelper;
 import com.gakumas.produce.util.GenkiHelper;
+import com.gakumas.produce.util.ScoreMath;
+import com.gakumas.produce.util.TargetingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -131,18 +134,36 @@ public final class DeckService {
                 if (!def.getUsability().canUse(player, deck)) {
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
-                // コスト（体力）チェック・消費
+                // コスト（体力）チェック・消費。消費体力減少中は軽減する（本Modでは一律 -2 の簡略化）
                 if (def.getHpCost() > 0) {
-                    GenkiHelper.consumeCost(player, def.getHpCost());
+                    int cost = def.getHpCost();
+                    if (deck.getBuffState().getCostReductionTurns() > 0) {
+                        cost = Math.max(0, cost - 2);
+                    }
+                    if (cost > 0) GenkiHelper.consumeCost(player, cost);
                 }
-                // 効果発動
-                def.getEffect().apply(player, deck);
+                // 効果発動。「次カード2回発動」が残っていれば2回発動する。
+                int times = 1;
+                if (deck.getBuffState().getDoubleNextCards() > 0) {
+                    times = 2;
+                    deck.getBuffState().consumeDoubleNextCard();
+                }
+                for (int t = 0; t < times; t++) {
+                    def.getEffect().apply(player, deck);
+                }
 
                 // 「演出計画」等の汎用パッシブ：カード使用のたびに元気+2 × スタック数
                 // （同じ効果を持つカードを重複して使った場合、その分だけ効果が重複発動するようスタックで管理する）
                 int encoreStacks = deck.getBuffState().getCustomCounter("encore_genki_stacks");
                 if (encoreStacks > 0) {
                     GenkiHelper.addGenki(player, 2f * encoreStacks);
+                }
+
+                // 追加ドロー予約の解決（「スポットライト」「一発勝負」等）
+                int pendingDraw = deck.getBuffState().getPendingDraw();
+                if (pendingDraw > 0) {
+                    drawCards(deck, pendingDraw);
+                    deck.getBuffState().clearPendingDraw();
                 }
 
                 // 使用済みカードの行き先: 通常カードは捨て札へ、レッスン中1回カードは除外へ
@@ -175,6 +196,19 @@ public final class DeckService {
         if (focusPerTurnStacks > 0 && deck.getBuffState().getFocusStacks() >= 3) {
             deck.getBuffState().addFocus(2 * focusPerTurnStacks);
         }
+
+        // 継続パラメータ（「至高のエンタメ」等）：ターン終了時にターゲットへその値ぶんダメージ
+        int paramPerTurn = deck.getBuffState().getParamPerTurn();
+        if (paramPerTurn > 0) {
+            LivingEntity target = TargetingHelper.getLookTarget(player);
+            if (target != null) {
+                target.hurt(player.level().damageSources().magic(),
+                        ScoreMath.calculateDamage(paramPerTurn, deck.getBuffState()));
+            }
+        }
+
+        // 消費体力減少の残ターンを1減らす
+        deck.getBuffState().tickCostReductionTurn();
 
         // 山札から新たに3枚ドロー
         drawCards(deck, HAND_SIZE);
