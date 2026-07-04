@@ -30,3 +30,8 @@ crash-reports/
 *.7z
 *.rar
 __pycache__/
+wiki_data.html
+wiki_decoded.html
+read_wiki.py
+cards.html
+*.webp
