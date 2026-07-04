@@ -1,6 +1,8 @@
 package com.gakumas.produce.registry;
 
 import com.gakumas.produce.GakumasProduceMod;
+import com.gakumas.produce.card.CardRarity;
+import com.gakumas.produce.item.CardPackItem;
 import com.gakumas.produce.item.HandbookItem;
 import com.gakumas.produce.item.ProduceCardItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -16,6 +18,16 @@ public final class ModItems {
 
     public static final RegistryObject<Item> PRODUCE_HANDBOOK = ITEMS.register("produce_handbook",
             () -> new HandbookItem(new Item.Properties().stacksTo(1)));
+
+    // ---- レア度別カードパック（右クリックで開封して該当レアのカードをランダム入手） ----
+    public static final RegistryObject<Item> PACK_WHITE = ITEMS.register("card_pack_white",
+            () -> new CardPackItem(new Item.Properties(), CardRarity.WHITE));
+    public static final RegistryObject<Item> PACK_SILVER = ITEMS.register("card_pack_silver",
+            () -> new CardPackItem(new Item.Properties(), CardRarity.SILVER));
+    public static final RegistryObject<Item> PACK_GOLD = ITEMS.register("card_pack_gold",
+            () -> new CardPackItem(new Item.Properties(), CardRarity.GOLD));
+    public static final RegistryObject<Item> PACK_RAINBOW = ITEMS.register("card_pack_rainbow",
+            () -> new CardPackItem(new Item.Properties(), CardRarity.RAINBOW));
 
     // ---- 初期実装6カード ----
     public static final RegistryObject<Item> CARD_APPEAL_BASIC = ITEMS.register("card_appeal_basic",

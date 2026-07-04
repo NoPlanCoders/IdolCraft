@@ -23,8 +23,16 @@ public final class ClientDeckState {
     private static int greatTicks = 0;
     private static int pLevel = 0;
     private static long produceXp = 0;
+    private static List<ResourceLocation> ownedCards = Collections.emptyList();
 
     private ClientDeckState() {}
+
+    /** 習得済みカードのコレクションを更新する（SyncOwnedCardsPacket 受信時） */
+    public static void updateOwned(List<ResourceLocation> owned) {
+        ownedCards = owned;
+    }
+
+    public static List<ResourceLocation> getOwnedCards() { return ownedCards; }
 
     public static void update(List<ResourceLocation> newHand, List<Boolean> newHandUsable, int selected, int focus, int good, int great, int level, long xp) {
         hand = newHand;

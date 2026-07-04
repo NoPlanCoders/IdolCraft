@@ -82,5 +82,9 @@
   "item.gakumas_produce.card_hot_topic": "Hot Topic",
   "item.gakumas_produce.card_national_idol": "National Idol",
   "item.gakumas_produce.card_endless_applause": "Endless Applause",
-  "item.gakumas_produce.card_natural_talent": "Natural Talent"
+  "item.gakumas_produce.card_natural_talent": "Natural Talent",
+  "item.gakumas_produce.card_pack_white": "White Card Pack",
+  "item.gakumas_produce.card_pack_silver": "Silver Card Pack",
+  "item.gakumas_produce.card_pack_gold": "Gold Card Pack",
+  "item.gakumas_produce.card_pack_rainbow": "Rainbow Card Pack"
 }

@@ -1,8 +1,10 @@
 package com.gakumas.produce.capability;
 
 import com.gakumas.produce.GakumasProduceMod;
+import com.gakumas.produce.network.SyncHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -36,5 +38,29 @@ public class CapabilityEvents {
             event.getEntity().getCapability(DeckCapability.DECK_DATA).ifPresent(newData -> newData.deserializeNBT(tag));
         });
         event.getOriginal().invalidateCaps();
+    }
+
+    /** ログイン時：習得済みコレクションをクライアントへ同期する（デッキ編成画面の表示に必要） */
+    @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            sp.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> SyncHelper.syncOwned(sp, deck));
+        }
+    }
+
+    /** リスポーン時にもコレクションを再同期する */
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            sp.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> SyncHelper.syncOwned(sp, deck));
+        }
+    }
+
+    /** 次元移動時にもコレクションを再同期する */
+    @SubscribeEvent
+    public static void onChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            sp.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> SyncHelper.syncOwned(sp, deck));
+        }
     }
 }

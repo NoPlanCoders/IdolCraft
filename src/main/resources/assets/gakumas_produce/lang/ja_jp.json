@@ -82,5 +82,9 @@
   "item.gakumas_produce.card_hot_topic": "話題沸騰",
   "item.gakumas_produce.card_national_idol": "国民的アイドル",
   "item.gakumas_produce.card_endless_applause": "鳴り止まない拍手",
-  "item.gakumas_produce.card_natural_talent": "天賦の才"
+  "item.gakumas_produce.card_natural_talent": "天賦の才",
+  "item.gakumas_produce.card_pack_white": "白カードパック",
+  "item.gakumas_produce.card_pack_silver": "銀カードパック",
+  "item.gakumas_produce.card_pack_gold": "金カードパック",
+  "item.gakumas_produce.card_pack_rainbow": "虹カードパック"
 }

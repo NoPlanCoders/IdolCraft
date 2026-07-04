@@ -44,9 +44,14 @@ public class SetDeckPacket {
             if (player == null) return;
 
             player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
-                deck.setMasterCardList(msg.cardIds);
+                // サーバー権威で、習得済み（入手済み）カードのみ受け付ける
+                List<ResourceLocation> filtered = new ArrayList<>();
+                for (ResourceLocation id : msg.cardIds) {
+                    if (deck.getOwnedCards().contains(id)) filtered.add(id);
+                }
+                deck.setMasterCardList(filtered);
                 player.displayClientMessage(
-                        Component.literal("【デッキ構成を保存しました】 (" + msg.cardIds.size() + "枚)")
+                        Component.literal("【デッキ構成を保存しました】 (" + filtered.size() + "枚)")
                                 .withStyle(ChatFormatting.GREEN),
                         true
                 );

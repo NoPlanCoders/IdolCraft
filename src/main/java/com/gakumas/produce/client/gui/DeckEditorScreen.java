@@ -89,8 +89,9 @@ public class DeckEditorScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        // 習得済み（入手済み）カードのみ編成に使える
         availableCards.clear();
-        for (CardDefinition card : CardRegistry.all()) availableCards.add(card.getId());
+        availableCards.addAll(com.gakumas.produce.client.ClientDeckState.getOwnedCards());
 
         deckCards.clear();
         if (this.minecraft.player != null) {
@@ -163,6 +164,12 @@ public class DeckEditorScreen extends Screen {
         hoveredCard = null;
         renderGrid(graphics, mouseX, mouseY, leftGridX,  availableCards, scrollLeft,  TEX_SLOT, false);
         renderGrid(graphics, mouseX, mouseY, rightGridX, deckCards,      scrollRight, TEX_SLOT_DECK, true);
+
+        // ── 所持カードが無い場合の案内 ──
+        if (availableCards.isEmpty()) {
+            graphics.drawCenteredString(this.font, "カードを未所持です。パックを開封→カードを右クリックで習得しよう",
+                    leftGridX + GRID_COLS * SLOT_SIZE / 2, gridY + gridHeight / 2 - 4, COLOR_CAPTION);
+        }
 
         // ── キャプション ──
         graphics.drawString(this.font, "クリックで追加 →", leftGridX, gridY + gridHeight + 10, COLOR_CAPTION, false);

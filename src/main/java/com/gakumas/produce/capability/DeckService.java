@@ -38,15 +38,15 @@ public final class DeckService {
      */
     public static void resetDeck(ServerPlayer player, IDeckData deck) {
         List<ResourceLocation> all = new ArrayList<>();
-        // マスターカードリストが未設定(初回)の場合は、登録済み全カードを1枚ずつデッキ構成にする
+        // マスターカードリストが未設定(初回)の場合は、習得済み（入手済み）カードをデッキ構成にする。
+        // 何も習得していなければ空デッキになる（まずカードを入手・習得する必要がある）。
         if (deck.getMasterCardList().isEmpty()) {
-            List<ResourceLocation> master = new ArrayList<>();
-            for (CardDefinition def : CardRegistry.all()) {
-                master.add(def.getId());
-            }
-            deck.setMasterCardList(master);
+            deck.setMasterCardList(new ArrayList<>(deck.getOwnedCards()));
         }
-        all.addAll(deck.getMasterCardList());
+        // マスターリストのうち、現在も習得済みのカードだけを実際のデッキに使う（未所持カードは除外）
+        for (ResourceLocation id : deck.getMasterCardList()) {
+            if (deck.getOwnedCards().contains(id)) all.add(id);
+        }
 
         deck.getDrawPile().clear();
         deck.getHand().clear();

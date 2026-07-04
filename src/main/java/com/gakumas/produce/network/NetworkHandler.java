@@ -5,6 +5,7 @@ import com.gakumas.produce.network.packet.ResetDeckPacket;
 import com.gakumas.produce.network.packet.SelectCardPacket;
 import com.gakumas.produce.network.packet.SetDeckPacket;
 import com.gakumas.produce.network.packet.SyncDeckPacket;
+import com.gakumas.produce.network.packet.SyncOwnedCardsPacket;
 import com.gakumas.produce.network.packet.UseOrSkipPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
@@ -29,5 +30,6 @@ public final class NetworkHandler {
         CHANNEL.registerMessage(id++, ResetDeckPacket.class, ResetDeckPacket::encode, ResetDeckPacket::decode, ResetDeckPacket::handle);
         CHANNEL.registerMessage(id++, SyncDeckPacket.class, SyncDeckPacket::encode, SyncDeckPacket::decode, SyncDeckPacket::handle);
         CHANNEL.registerMessage(id++, SetDeckPacket.class, SetDeckPacket::encode, SetDeckPacket::decode, SetDeckPacket::handle);
+        CHANNEL.registerMessage(id++, SyncOwnedCardsPacket.class, SyncOwnedCardsPacket::encode, SyncOwnedCardsPacket::decode, SyncOwnedCardsPacket::handle);
     }
 }

@@ -30,7 +30,39 @@ public final class CommandHandler {
             .then(registerDeckCommands())
             .then(registerBuffCommands())
             .then(registerPLevelCommands())
+            .then(registerCardCommands())
         );
+    }
+
+    private static ArgumentBuilder<CommandSourceStack, ?> registerCardCommands() {
+        return Commands.literal("cards")
+            .then(Commands.literal("unlockall").executes(CommandHandler::runUnlockAll))
+            .then(Commands.literal("clear").executes(CommandHandler::runClearCards));
+    }
+
+    private static int runUnlockAll(CommandContext<CommandSourceStack> context) {
+        ServerPlayer player = getPlayer(context);
+        if (player == null) return 0;
+        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
+            int[] added = {0};
+            for (com.gakumas.produce.card.CardDefinition def : com.gakumas.produce.card.CardRegistry.all()) {
+                if (deck.addOwnedCard(def.getId())) added[0]++;
+            }
+            SyncHelper.syncOwned(player, deck);
+            context.getSource().sendSuccess(() -> Component.literal("全カードを習得しました（+" + added[0] + "枚）。"), true);
+        });
+        return 1;
+    }
+
+    private static int runClearCards(CommandContext<CommandSourceStack> context) {
+        ServerPlayer player = getPlayer(context);
+        if (player == null) return 0;
+        player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
+            deck.getOwnedCards().clear();
+            SyncHelper.syncOwned(player, deck);
+            context.getSource().sendSuccess(() -> Component.literal("習得済みカードのコレクションを空にしました。"), true);
+        });
+        return 1;
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerDeckCommands() {

@@ -9,7 +9,9 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DeckDataImpl implements IDeckData {
 
@@ -18,6 +20,7 @@ public class DeckDataImpl implements IDeckData {
     private final List<ResourceLocation> discardPile = new ArrayList<>();
     private final List<ResourceLocation> exclusionPile = new ArrayList<>();
     private final List<ResourceLocation> masterCardList = new ArrayList<>();
+    private final Set<ResourceLocation> ownedCards = new LinkedHashSet<>();
     private int selectedIndex = 0;
     private boolean initialized = false;
     private long produceXp = 0;
@@ -53,6 +56,10 @@ public class DeckDataImpl implements IDeckData {
     @Override public void setProduceXp(long xp) { this.produceXp = Math.max(0, xp); }
     @Override public void addProduceXp(long delta) { this.produceXp = Math.max(0, this.produceXp + delta); }
 
+    @Override public Set<ResourceLocation> getOwnedCards() { return ownedCards; }
+    @Override public boolean addOwnedCard(ResourceLocation cardId) { return ownedCards.add(cardId); }
+    @Override public boolean hasOwnedCard(ResourceLocation cardId) { return ownedCards.contains(cardId); }
+
     private static ListTag toListTag(List<ResourceLocation> list) {
         ListTag tag = new ListTag();
         for (ResourceLocation rl : list) tag.add(StringTag.valueOf(rl.toString()));
@@ -79,6 +86,7 @@ public class DeckDataImpl implements IDeckData {
         tag.putInt("selected", selectedIndex);
         tag.putBoolean("initialized", initialized);
         tag.putLong("produceXp", produceXp);
+        tag.put("owned", toListTag(new ArrayList<>(ownedCards)));
         tag.put("buff", buffState.serializeNBT());
         return tag;
     }
@@ -100,6 +108,8 @@ public class DeckDataImpl implements IDeckData {
         } else {
             produceXp = 0;
         }
+        ownedCards.clear();
+        ownedCards.addAll(fromListTag(tag.getList("owned", Tag.TAG_STRING)));
         buffState.deserializeNBT(tag.getCompound("buff"));
     }
 }

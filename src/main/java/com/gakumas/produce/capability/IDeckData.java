@@ -49,6 +49,15 @@ public interface IDeckData {
     /** 累計経験値を加算する（負値は0でクランプ）。 */
     void addProduceXp(long delta);
 
+    /**
+     * 「習得済み（入手済み）」カードのコレクション。デッキ編成はこの集合の中からのみ行える。
+     * カードアイテムを右クリックで習得すると恒久的に追加される（アイテム紛失や死亡では失われない）。
+     */
+    java.util.Set<ResourceLocation> getOwnedCards();
+    /** カードを習得済みに加える。新規に追加された場合のみ true を返す。 */
+    boolean addOwnedCard(ResourceLocation cardId);
+    boolean hasOwnedCard(ResourceLocation cardId);
+
     CompoundTag serializeNBT();
     void deserializeNBT(CompoundTag tag);
 }
