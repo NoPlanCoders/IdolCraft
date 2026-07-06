@@ -6,8 +6,8 @@ import os
 from PIL import Image, ImageDraw
 
 BASE = "src/main/resources"
-A = f"{BASE}/assets/gakumas_produce"
-D = f"{BASE}/data/gakumas_produce"
+A = f"{BASE}/assets/idolcraft"
+D = f"{BASE}/data/idolcraft"
 
 # id, 日本語, 英語, レア色, クラフト追加素材
 MATERIALS = [
@@ -66,31 +66,31 @@ def gen_material_assets():
     for cid, jp, en, color, mat in MATERIALS:
         gen_material_texture(cid, color)
         write(f"{A}/models/item/{cid}.json",
-              {"parent": "item/generated", "textures": {"layer0": f"gakumas_produce:item/{cid}"}})
+              {"parent": "item/generated", "textures": {"layer0": f"idolcraft:item/{cid}"}})
         write(f"{D}/recipes/{cid}.json", {
             "type": "minecraft:crafting_shapeless",
             "ingredients": [{"item": "minecraft:paper"}, {"item": "minecraft:paper"},
                             {"item": "minecraft:paper"}, {"item": mat}],
-            "result": {"item": f"gakumas_produce:{cid}", "count": 1},
+            "result": {"item": f"idolcraft:{cid}", "count": 1},
         })
 
 
 def gen_block_assets():
     write(f"{A}/blockstates/card_workshop.json",
-          {"variants": {"": {"model": "gakumas_produce:block/card_workshop"}}})
+          {"variants": {"": {"model": "idolcraft:block/card_workshop"}}})
     write(f"{A}/models/block/card_workshop.json",
-          {"parent": "minecraft:block/cube_all", "textures": {"all": "gakumas_produce:block/card_workshop"}})
-    write(f"{A}/models/item/card_workshop.json", {"parent": "gakumas_produce:block/card_workshop"})
+          {"parent": "minecraft:block/cube_all", "textures": {"all": "idolcraft:block/card_workshop"}})
+    write(f"{A}/models/item/card_workshop.json", {"parent": "idolcraft:block/card_workshop"})
     write(f"{D}/loot_tables/blocks/card_workshop.json", {
         "type": "minecraft:block",
-        "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "gakumas_produce:card_workshop"}],
+        "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "idolcraft:card_workshop"}],
                    "conditions": [{"condition": "minecraft:survives_explosion"}]}],
     })
     write(f"{D}/recipes/card_workshop.json", {
         "type": "minecraft:crafting_shaped",
         "pattern": ["PPP", "PCP", "PPP"],
         "key": {"P": {"item": "minecraft:paper"}, "C": {"item": "minecraft:crafting_table"}},
-        "result": {"item": "gakumas_produce:card_workshop", "count": 1},
+        "result": {"item": "idolcraft:card_workshop", "count": 1},
     })
 
 
@@ -98,8 +98,8 @@ def update_lang(fname, idx):
     p = f"{A}/lang/{fname}"
     data = json.load(open(p, encoding="utf-8"))
     for cid, jp, en, _, _ in MATERIALS:
-        data[f"item.gakumas_produce.{cid}"] = jp if idx == 0 else en
-    data["block.gakumas_produce.card_workshop"] = "スキルカード作業台" if idx == 0 else "Skill Card Workshop"
+        data[f"item.idolcraft.{cid}"] = jp if idx == 0 else en
+    data["block.idolcraft.card_workshop"] = "スキルカード作業台" if idx == 0 else "Skill Card Workshop"
     json.dump(data, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
 
@@ -116,3 +116,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

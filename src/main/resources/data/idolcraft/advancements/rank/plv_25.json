@@ -1,0 +1,21 @@
+{
+  "parent": "idolcraft:rank/plv_24",
+  "display": {
+    "icon": { "item": "minecraft:netherite_ingot" },
+    "title": { "translate": "advancements.idolcraft.rank.plv_25.title" },
+    "description": { "translate": "advancements.idolcraft.rank.plv_25.description" },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "got_netherite": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [ { "items": [ "minecraft:netherite_ingot" ] } ]
+      }
+    }
+  }
+}
+

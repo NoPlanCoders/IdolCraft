@@ -10,8 +10,8 @@
 import json
 import os
 
-MODEL_DIR = "src/main/resources/assets/gakumas_produce/models/item"
-LANG_DIR = "src/main/resources/assets/gakumas_produce/lang"
+MODEL_DIR = "src/main/resources/assets/idolcraft/models/item"
+LANG_DIR = "src/main/resources/assets/idolcraft/lang"
 
 # id -> (日本語名, 英語名)
 CARDS = [
@@ -73,7 +73,7 @@ def write_models():
     for cid, _, _ in CARDS:
         model = {
             "parent": "item/generated",
-            "textures": {"layer0": f"gakumas_produce:item/{cid}"},
+            "textures": {"layer0": f"idolcraft:item/{cid}"},
         }
         with open(f"{MODEL_DIR}/{cid}.json", "w", encoding="utf-8") as f:
             json.dump(model, f, ensure_ascii=False, indent=2)
@@ -85,7 +85,7 @@ def update_lang(fname, idx):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     for cid, jp, en in CARDS:
-        data[f"item.gakumas_produce.{cid}"] = jp if idx == 0 else en
+        data[f"item.idolcraft.{cid}"] = jp if idx == 0 else en
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f"updated {fname} (+{len(CARDS)} keys)")
@@ -104,3 +104,4 @@ if __name__ == "__main__":
     update_lang("ja_jp.json", 0)
     update_lang("en_us.json", 1)
     print_moditems()
+

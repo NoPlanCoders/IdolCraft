@@ -15,7 +15,7 @@ from io import BytesIO
 from PIL import Image
 
 LIST_URL = "https://wikiwiki.jp/gakumas/%E3%82%B9%E3%82%AD%E3%83%AB%E3%82%AB%E3%83%BC%E3%83%89%E4%B8%80%E8%A6%A7"
-OUT_DIR = "src/main/resources/assets/gakumas_produce/textures/item"
+OUT_DIR = "src/main/resources/assets/idolcraft/textures/item"
 TEX_SIZE = 96  # item テクスチャの一辺(px)
 
 # id -> 本家カード名（画像検索キー）。新規センスカード50種。
@@ -145,3 +145,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

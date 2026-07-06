@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "idolcraft:item/card_direction_plan"
+  }
+}
+
