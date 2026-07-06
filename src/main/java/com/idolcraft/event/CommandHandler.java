@@ -7,6 +7,7 @@ import com.idolcraft.item.HandbookItem;
 import com.idolcraft.network.SyncHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -79,20 +80,20 @@ public final class CommandHandler {
         return Commands.literal("buff")
             .then(Commands.argument("target", EntityArgument.player())
                 .then(Commands.literal("focus")
-                    .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                    .then(Commands.argument("amount", LongArgumentType.longArg(1))
                         .executes(context -> runAddFocus(context,
                             EntityArgument.getPlayer(context, "target"),
-                            IntegerArgumentType.getInteger(context, "amount")))))
+                            LongArgumentType.getLong(context, "amount")))))
                 .then(Commands.literal("good")
-                    .then(Commands.argument("turns", IntegerArgumentType.integer(1))
+                    .then(Commands.argument("turns", LongArgumentType.longArg(1))
                         .executes(context -> runAddGoodCondition(context,
                             EntityArgument.getPlayer(context, "target"),
-                            IntegerArgumentType.getInteger(context, "turns")))))
+                            LongArgumentType.getLong(context, "turns")))))
                 .then(Commands.literal("great")
-                    .then(Commands.argument("turns", IntegerArgumentType.integer(1))
+                    .then(Commands.argument("turns", LongArgumentType.longArg(1))
                         .executes(context -> runAddGreatCondition(context,
                             EntityArgument.getPlayer(context, "target"),
-                            IntegerArgumentType.getInteger(context, "turns")))))
+                            LongArgumentType.getLong(context, "turns")))))
                 .then(Commands.literal("clear")
                     .executes(context -> runClearBuffs(context, EntityArgument.getPlayer(context, "target")))));
         }
@@ -179,7 +180,7 @@ public final class CommandHandler {
         return 1;
     }
 
-    private static int runAddFocus(CommandContext<CommandSourceStack> context, ServerPlayer player, int amount) {
+    private static int runAddFocus(CommandContext<CommandSourceStack> context, ServerPlayer player, long amount) {
         player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
             deck.getBuffState().addFocus(amount);
             SyncHelper.syncTo(player, deck);
@@ -188,7 +189,7 @@ public final class CommandHandler {
         return 1;
     }
 
-    private static int runAddGoodCondition(CommandContext<CommandSourceStack> context, ServerPlayer player, int turns) {
+    private static int runAddGoodCondition(CommandContext<CommandSourceStack> context, ServerPlayer player, long turns) {
         player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
             deck.getBuffState().addGoodCondition(turns * DeckService.TICKS_PER_TURN, turns);
             SyncHelper.syncTo(player, deck);
@@ -197,7 +198,7 @@ public final class CommandHandler {
         return 1;
     }
 
-    private static int runAddGreatCondition(CommandContext<CommandSourceStack> context, ServerPlayer player, int turns) {
+    private static int runAddGreatCondition(CommandContext<CommandSourceStack> context, ServerPlayer player, long turns) {
         player.getCapability(DeckCapability.DECK_DATA).ifPresent(deck -> {
             deck.getBuffState().addGreatCondition(turns * DeckService.TICKS_PER_TURN);
             SyncHelper.syncTo(player, deck);
