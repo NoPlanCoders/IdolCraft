@@ -154,15 +154,15 @@ public final class DeckService {
 
                 // 「演出計画」等の汎用パッシブ：カード使用のたびに元気+2 × スタック数
                 // （同じ効果を持つカードを重複して使った場合、その分だけ効果が重複発動するようスタックで管理する）
-                int encoreStacks = deck.getBuffState().getCustomCounter("encore_genki_stacks");
+                long encoreStacks = deck.getBuffState().getCustomCounter("encore_genki_stacks");
                 if (encoreStacks > 0) {
                     GenkiHelper.addGenki(player, 2f * encoreStacks);
                 }
 
                 // 追加ドロー予約の解決（「スポットライト」「一発勝負」等）
-                int pendingDraw = deck.getBuffState().getPendingDraw();
+                long pendingDraw = deck.getBuffState().getPendingDraw();
                 if (pendingDraw > 0) {
-                    drawCards(deck, pendingDraw);
+                    drawCards(deck, (int) Math.min(pendingDraw, Integer.MAX_VALUE));
                     deck.getBuffState().clearPendingDraw();
                 }
 
@@ -192,13 +192,13 @@ public final class DeckService {
         deck.getHand().clear();
 
         // 「天真爛漫」等の汎用パッシブ：ターン終了時、集中が3以上ならさらに集中+2 × スタック数
-        int focusPerTurnStacks = deck.getBuffState().getCustomCounter("focus_per_turn_stacks");
+        long focusPerTurnStacks = deck.getBuffState().getCustomCounter("focus_per_turn_stacks");
         if (focusPerTurnStacks > 0 && deck.getBuffState().getFocusStacks() >= 3) {
             deck.getBuffState().addFocus(2 * focusPerTurnStacks);
         }
 
         // 継続パラメータ（「至高のエンタメ」等）：ターン終了時にターゲットへその値ぶんダメージ
-        int paramPerTurn = deck.getBuffState().getParamPerTurn();
+        long paramPerTurn = deck.getBuffState().getParamPerTurn();
         if (paramPerTurn > 0) {
             LivingEntity target = TargetingHelper.getLookTarget(player);
             if (target != null) {

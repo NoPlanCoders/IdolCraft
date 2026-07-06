@@ -42,9 +42,9 @@ public class GakumasHudOverlay implements IGuiOverlay {
     private void renderBuffColumn(GuiGraphics g, int sh) {
         int x = 6, gap = 23;
         int y = sh / 2 - 34;
-        int f = ClientDeckState.getFocusStacks();
-        int gd = ClientDeckState.getGoodTicks();
-        int gr = ClientDeckState.getGreatTicks();
+        long f = ClientDeckState.getFocusStacks();
+        long gd = ClientDeckState.getGoodTicks();
+        long gr = ClientDeckState.getGreatTicks();
         if (f > 0) { drawBuff(g, x, y, GuiTextures.ICON_FOCUS, "x" + f); y += gap; }
         if (gd > 0) { drawBuff(g, x, y, GuiTextures.ICON_GOOD_CONDITION, fmt(gd)); y += gap; }
         if (gr > 0) { drawBuff(g, x, y, GuiTextures.ICON_GREAT_CONDITION, fmt(gr)); }
@@ -60,7 +60,7 @@ public class GakumasHudOverlay implements IGuiOverlay {
                 x + BUF_ICON + 3, y + (BUF_ICON - 8) / 2, 0xFFFFFFFF, true);
     }
 
-    private static String fmt(int ticks) {
+    private static String fmt(long ticks) {
         return String.format(Locale.US, "%.1fs", ticks / 20.0);
     }
 

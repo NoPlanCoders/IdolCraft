@@ -18,9 +18,9 @@ public class SyncDeckPacket {
     private final List<ResourceLocation> hand;
     private final List<Boolean> handUsable;
     private final int selectedIndex;
-    private final int focusStacks;
-    private final int goodTicks;
-    private final int greatTicks;
+    private final long focusStacks;
+    private final long goodTicks;
+    private final long greatTicks;
     private final int pLevel;
     private final long produceXp;
 
@@ -41,7 +41,7 @@ public class SyncDeckPacket {
         this.produceXp = deck.getProduceXp();
     }
 
-    private SyncDeckPacket(List<ResourceLocation> hand, List<Boolean> handUsable, int selectedIndex, int focusStacks, int goodTicks, int greatTicks, int pLevel, long produceXp) {
+    private SyncDeckPacket(List<ResourceLocation> hand, List<Boolean> handUsable, int selectedIndex, long focusStacks, long goodTicks, long greatTicks, int pLevel, long produceXp) {
         this.hand = hand;
         this.handUsable = handUsable;
         this.selectedIndex = selectedIndex;
@@ -57,9 +57,9 @@ public class SyncDeckPacket {
         for (ResourceLocation rl : msg.hand) buf.writeResourceLocation(rl);
         for (boolean usable : msg.handUsable) buf.writeBoolean(usable);
         buf.writeVarInt(msg.selectedIndex);
-        buf.writeVarInt(msg.focusStacks);
-        buf.writeVarInt(msg.goodTicks);
-        buf.writeVarInt(msg.greatTicks);
+        buf.writeVarLong(msg.focusStacks);
+        buf.writeVarLong(msg.goodTicks);
+        buf.writeVarLong(msg.greatTicks);
         buf.writeVarInt(msg.pLevel);
         buf.writeVarLong(msg.produceXp);
     }
@@ -71,9 +71,9 @@ public class SyncDeckPacket {
         List<Boolean> handUsable = new ArrayList<>();
         for (int i = 0; i < size; i++) handUsable.add(buf.readBoolean());
         int selected = buf.readVarInt();
-        int focus = buf.readVarInt();
-        int good = buf.readVarInt();
-        int great = buf.readVarInt();
+        long focus = buf.readVarLong();
+        long good = buf.readVarLong();
+        long great = buf.readVarLong();
         int pLevel = buf.readVarInt();
         long produceXp = buf.readVarLong();
         return new SyncDeckPacket(hand, handUsable, selected, focus, good, great, pLevel, produceXp);

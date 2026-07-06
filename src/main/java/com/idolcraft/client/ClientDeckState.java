@@ -18,9 +18,9 @@ public final class ClientDeckState {
     private static List<ResourceLocation> hand = Collections.emptyList();
     private static List<Boolean> handUsable = Collections.emptyList();
     private static int selectedIndex = 0;
-    private static int focusStacks = 0;
-    private static int goodTicks = 0;
-    private static int greatTicks = 0;
+    private static long focusStacks = 0;
+    private static long goodTicks = 0;
+    private static long greatTicks = 0;
     private static int pLevel = 0;
     private static long produceXp = 0;
     private static List<ResourceLocation> ownedCards = Collections.emptyList();
@@ -34,7 +34,7 @@ public final class ClientDeckState {
 
     public static List<ResourceLocation> getOwnedCards() { return ownedCards; }
 
-    public static void update(List<ResourceLocation> newHand, List<Boolean> newHandUsable, int selected, int focus, int good, int great, int level, long xp) {
+    public static void update(List<ResourceLocation> newHand, List<Boolean> newHandUsable, int selected, long focus, long good, long great, int level, long xp) {
         hand = newHand;
         handUsable = newHandUsable;
         selectedIndex = selected;
@@ -59,9 +59,9 @@ public final class ClientDeckState {
     }
 
     public static int getSelectedIndex() { return selectedIndex; }
-    public static int getFocusStacks() { return focusStacks; }
-    public static int getGoodTicks() { return goodTicks; }
-    public static int getGreatTicks() { return greatTicks; }
+    public static long getFocusStacks() { return focusStacks; }
+    public static long getGoodTicks() { return goodTicks; }
+    public static long getGreatTicks() { return greatTicks; }
     public static int getPLevel() { return pLevel; }
     public static long getProduceXp() { return produceXp; }
 }

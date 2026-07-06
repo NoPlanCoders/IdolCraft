@@ -109,11 +109,11 @@ public final class ProduceCards {
                     LivingEntity t = TargetingHelper.getLookTarget(player);
                     if (t != null) {
                         BuffState b = deck.getBuffState();
-                        int raw = 17 + (int)(b.getFocusStacks() * 1.5);
+                        long raw = 17 + (long)(b.getFocusStacks() * 1.5);
                         double mult = b.isGoodConditionActive()
                                 ? (b.isGreatConditionActive() ? 1.5 + 0.1 * b.getGoodConditionTurnsAccumulated() : 1.5)
                                 : 1.0;
-                        t.hurt(player.level().damageSources().magic(), (int)Math.ceil(raw * mult));
+                        t.hurt(player.level().damageSources().magic(), ScoreMath.toEntityDamage((long) Math.ceil(raw * mult)));
                     }
                 }).build());
 
@@ -496,7 +496,7 @@ public final class ProduceCards {
                 .usableWhen((p, d) -> d.getBuffState().isGoodConditionActive(), "好調が必要")
                 .effect((player, deck) -> {
                     BuffState b = deck.getBuffState();
-                    int consume = Math.min(b.getGoodConditionTicks(), 2 * DeckService.TICKS_PER_TURN);
+                    long consume = Math.min(b.getGoodConditionTicks(), 2L * DeckService.TICKS_PER_TURN);
                     b.addGoodCondition(-consume, 0);
                     b.addFocus(4);
                     b.addBonusAction(1);
