@@ -11,7 +11,7 @@ public final class PLevelCurve {
     private PLevelCurve() {}
 
     /** 到達可能な最大Pレベル（本家の解放カードは最大PLv56のためそれ以上に余裕を持たせる） */
-    public static final int MAX_LEVEL = 60;
+    public static final int MAX_LEVEL = 80;
 
     /**
      * レベル {@code level} から {@code level+1} へ上がるのに必要な経験値。
