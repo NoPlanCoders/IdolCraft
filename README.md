@@ -1,14 +1,12 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="IdolCraft" width="120" />
+<img src="docs/icon.png" alt="IdolCraft" width="120" />
 
 # IdolCraft
 
 **Minecraft Forge 1.20.1 向けの、プロデュースカードとバフ管理を追加する MOD です。**
 
 </div>
-
----
 
 ## 概要
 
