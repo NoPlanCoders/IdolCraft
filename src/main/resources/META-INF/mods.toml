@@ -7,6 +7,7 @@ issueTrackerURL="https://github.com/NoPlanCoders/IdolCraft/issues"
 modId="idolcraft"
 version="1.0.0-beta"
 displayName="IdolCraft"
+logoFile="icon.png"
 authors="NoPlanCoders"
 description='''
 Gakumas-style produce card and buff system for Minecraft Forge 1.20.1.
