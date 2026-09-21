@@ -33,6 +33,9 @@ public class IdolCraft {
         event.enqueueWork(() -> {
             ProduceCards.registerAll();
             com.idolcraft.card.impl.ProduceSenseCards.registerAll();
+            com.idolcraft.card.impl.ProduceFreeCards.registerAll();
+            com.idolcraft.card.impl.ProduceLogicCards.registerAll();
+            com.idolcraft.card.impl.ProduceAnomalyCards.registerAll();
             NetworkHandler.register();
         });
     }

@@ -160,6 +160,119 @@ public class BuffState {
     public long getParamPerTurn() { return getCustomCounter(PARAM_PER_TURN_KEY); }
     public void addParamPerTurn(long n) { setCustomCounter(PARAM_PER_TURN_KEY, Math.max(0L, getParamPerTurn() + n)); }
 
+    // ================================================================
+    // ロジックプラン：やる気・好印象（集中と同じく永続スタック型）
+    // ================================================================
+    private static final String MOTIVATION_KEY = "motivation";
+    public long getMotivation() { return getCustomCounter(MOTIVATION_KEY); }
+    public void addMotivation(long amount) { setCustomCounter(MOTIVATION_KEY, Math.max(0L, getMotivation() + amount)); }
+
+    private static final String IMPRESSION_KEY = "good_impression";
+    public long getGoodImpression() { return getCustomCounter(IMPRESSION_KEY); }
+    public void addGoodImpression(long amount) { setCustomCounter(IMPRESSION_KEY, Math.max(0L, getGoodImpression() + amount)); }
+
+    // 好印象強化（一定ターンの間、好印象増加量を割合で上乗せする。ターン経過はDeckService側でtickする）
+    private static final String IMPRESSION_BOOST_PCT_KEY = "impression_boost_pct";
+    private static final String IMPRESSION_BOOST_TURNS_KEY = "impression_boost_turns";
+    public long getImpressionBoostPercent() { return getCustomCounter(IMPRESSION_BOOST_PCT_KEY); }
+    public long getImpressionBoostTurns() { return getCustomCounter(IMPRESSION_BOOST_TURNS_KEY); }
+    public void addImpressionBoost(long percent, long turns) {
+        setCustomCounter(IMPRESSION_BOOST_PCT_KEY, Math.max(0L, getImpressionBoostPercent() + percent));
+        setCustomCounter(IMPRESSION_BOOST_TURNS_KEY, Math.max(0L, getImpressionBoostTurns() + turns));
+    }
+    public void tickImpressionBoostTurn() {
+        long t = getImpressionBoostTurns();
+        if (t > 0) {
+            setCustomCounter(IMPRESSION_BOOST_TURNS_KEY, t - 1);
+            if (t - 1 == 0) setCustomCounter(IMPRESSION_BOOST_PCT_KEY, 0);
+        }
+    }
+
+    // ================================================================
+    // アノマリープラン：全力値・強気・温存・熱意・成長
+    // ================================================================
+
+    /** 全力値：スタック型。カードのコスト（「全力値N」）として直接消費されることもある */
+    private static final String ZENRYOKU_KEY = "zenryoku";
+    private static final String ZENRYOKU_ACCUMULATED_KEY = "zenryoku_accumulated";
+    public long getZenryoku() { return getCustomCounter(ZENRYOKU_KEY); }
+    /** このレッスン中に累計で獲得した全力値（消費しても減らない。「羽ばたけ!」等の条件判定用） */
+    public long getZenryokuAccumulated() { return getCustomCounter(ZENRYOKU_ACCUMULATED_KEY); }
+    public void addZenryoku(long amount) {
+        setCustomCounter(ZENRYOKU_KEY, Math.max(0L, getZenryoku() + amount));
+        if (amount > 0) setCustomCounter(ZENRYOKU_ACCUMULATED_KEY, getZenryokuAccumulated() + amount);
+    }
+    /** 全力値をコストとして消費する。足りない場合は0まで消費して打ち切る */
+    public void spendZenryoku(long amount) {
+        setCustomCounter(ZENRYOKU_KEY, Math.max(0L, getZenryoku() - amount));
+    }
+
+    /** 強気の段階（0=無し, 1=強気, 2=強気2段階目）。「変更」効果なので加算ではなく上書き（下位互換のため最大値を保持） */
+    private static final String BOLD_STAGE_KEY = "bold_stage";
+    public long getBoldStage() { return getCustomCounter(BOLD_STAGE_KEY); }
+    public boolean isBold() { return getBoldStage() >= 1; }
+    public boolean isBoldStage2() { return getBoldStage() >= 2; }
+    public void setBoldStageAtLeast(long stage) { setCustomCounter(BOLD_STAGE_KEY, Math.max(getBoldStage(), stage)); }
+
+    /** 温存の段階（0=無し, 1=温存, 2=温存2段階目） */
+    private static final String CONSERVE_STAGE_KEY = "conserve_stage";
+    public long getConserveStage() { return getCustomCounter(CONSERVE_STAGE_KEY); }
+    public boolean isConserving() { return getConserveStage() >= 1; }
+    public boolean isConservingStage2() { return getConserveStage() >= 2; }
+    public void setConserveStageAtLeast(long stage) { setCustomCounter(CONSERVE_STAGE_KEY, Math.max(getConserveStage(), stage)); }
+
+    /** 「指針」：強気・温存のいずれかが有効かどうか（本Modでは強気/温存をまとめて指針として扱う近似） */
+    public boolean hasAnyPolicy() { return isBold() || isConserving(); }
+
+    /** 熱意増加：一定ターンの間、アクティブスキルカードのパラメータ上昇量を割合で上乗せする */
+    private static final String ENTHUSIASM_PCT_KEY = "enthusiasm_pct";
+    private static final String ENTHUSIASM_TURNS_KEY = "enthusiasm_turns";
+    public long getEnthusiasmPercent() { return getCustomCounter(ENTHUSIASM_PCT_KEY); }
+    public long getEnthusiasmTurns() { return getCustomCounter(ENTHUSIASM_TURNS_KEY); }
+    public void addEnthusiasm(long percent, long turns) {
+        setCustomCounter(ENTHUSIASM_PCT_KEY, Math.max(0L, getEnthusiasmPercent() + percent));
+        setCustomCounter(ENTHUSIASM_TURNS_KEY, Math.max(0L, getEnthusiasmTurns() + turns));
+    }
+    public void tickEnthusiasmTurn() {
+        long t = getEnthusiasmTurns();
+        if (t > 0) {
+            setCustomCounter(ENTHUSIASM_TURNS_KEY, t - 1);
+            if (t - 1 == 0) setCustomCounter(ENTHUSIASM_PCT_KEY, 0);
+        }
+    }
+
+    /** 汎用の「成長」カウンタ：カードごとに growth_<カードのpath> キーで積み上げる自己強化回数 */
+    public long getGrowthStacks(String cardPath) { return getCustomCounter("growth_" + cardPath); }
+    public void addGrowthStacks(String cardPath, long amount, long max) {
+        long cur = getGrowthStacks(cardPath);
+        if (cur < max) setCustomCounter("growth_" + cardPath, Math.min(max, cur + amount));
+    }
+
+    // ── カテゴリ条件付きの汎用パッシブ（「メンタルスキルカード使用時、やる気+1」等） ──
+    public long getOnMentalUseMotivation() { return getCustomCounter("on_mental_use_motivation"); }
+    public void addOnMentalUseMotivation(long n) { setCustomCounter("on_mental_use_motivation", getOnMentalUseMotivation() + n); }
+    public long getOnMentalUseImpression() { return getCustomCounter("on_mental_use_impression"); }
+    public void addOnMentalUseImpression(long n) { setCustomCounter("on_mental_use_impression", getOnMentalUseImpression() + n); }
+    /** 「メンタルスキルカードの元気値増加+N」（インフルエンサー等）：メンタルカード使用のたびに元気+N */
+    public long getOnMentalUseGenki() { return getCustomCounter("on_mental_use_genki"); }
+    public void addOnMentalUseGenki(long n) { setCustomCounter("on_mental_use_genki", getOnMentalUseGenki() + n); }
+
+    /** アクティブスキルカードのパラメータ値増加（永続、重複可）。「ハッスル」「盛り上げ上手」等 */
+    public long getActiveParamBonus() { return getCustomCounter("active_param_bonus"); }
+    public void addActiveParamBonus(long n) { setCustomCounter("active_param_bonus", getActiveParamBonus() + n); }
+
+    /** 「次に使用したスキルカードの消費体力を0にする」の残数（「全身全霊」等） */
+    public long getFreeCostUses() { return getCustomCounter("free_cost_uses"); }
+    public void addFreeCostUses(long n) { setCustomCounter("free_cost_uses", Math.max(0L, getFreeCostUses() + n)); }
+    public void consumeFreeCostUse() {
+        long c = getFreeCostUses();
+        if (c > 0) setCustomCounter("free_cost_uses", c - 1);
+    }
+
+    /** このレッスン中に「温存に変更」した回数（「タフネス」の使用条件判定用） */
+    public long getConserveActivations() { return getCustomCounter("conserve_activations"); }
+    public void incrementConserveActivations() { setCustomCounter("conserve_activations", getConserveActivations() + 1); }
+
     /**
      * 毎Tick呼び出される時間経過処理。好調・絶好調をリアルタイムで減少させる。
      * 集中は減らさない（本家仕様通り、リセットまで永続）。

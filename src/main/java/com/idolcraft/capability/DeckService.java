@@ -135,7 +135,9 @@ public final class DeckService {
                     return; // カード使用をキャンセルし、それ以外の状態は一切変化させない
                 }
                 // コスト（体力）チェック・消費。消費体力減少中は軽減する（本Modでは一律 -2 の簡略化）
-                if (def.getHpCost() > 0) {
+                if (deck.getBuffState().getFreeCostUses() > 0) {
+                    deck.getBuffState().consumeFreeCostUse();
+                } else if (def.getHpCost() > 0) {
                     int cost = def.getHpCost();
                     if (deck.getBuffState().getCostReductionTurns() > 0) {
                         cost = Math.max(0, cost - 2);
@@ -157,6 +159,16 @@ public final class DeckService {
                 long encoreStacks = deck.getBuffState().getCustomCounter("encore_genki_stacks");
                 if (encoreStacks > 0) {
                     GenkiHelper.addGenki(player, 2f * encoreStacks);
+                }
+
+                // ロジック/アノマリープランの汎用パッシブ：メンタルスキルカード使用時、やる気/好印象/元気を追加で得る
+                if (def.getCategory() == com.idolcraft.card.CardCategory.MENTAL) {
+                    long m = deck.getBuffState().getOnMentalUseMotivation();
+                    if (m > 0) deck.getBuffState().addMotivation(m);
+                    long imp = deck.getBuffState().getOnMentalUseImpression();
+                    if (imp > 0) deck.getBuffState().addGoodImpression(imp);
+                    long genki = deck.getBuffState().getOnMentalUseGenki();
+                    if (genki > 0) GenkiHelper.addGenki(player, genki);
                 }
 
                 // 追加ドロー予約の解決（「スポットライト」「一発勝負」等）
@@ -197,6 +209,12 @@ public final class DeckService {
             deck.getBuffState().addFocus(2 * focusPerTurnStacks);
         }
 
+        // 「虹色ドリーマー」等の汎用パッシブ：ターン終了時、好印象が3以上ならさらに好印象+3 × スタック数
+        long impressionPerTurnStacks = deck.getBuffState().getCustomCounter("impression_per_turn_stacks");
+        if (impressionPerTurnStacks > 0 && deck.getBuffState().getGoodImpression() >= 3) {
+            deck.getBuffState().addGoodImpression(3 * impressionPerTurnStacks);
+        }
+
         // 継続パラメータ（「至高のエンタメ」等）：ターン終了時にターゲットへその値ぶんダメージ
         long paramPerTurn = deck.getBuffState().getParamPerTurn();
         if (paramPerTurn > 0) {
@@ -209,10 +227,31 @@ public final class DeckService {
 
         // 消費体力減少の残ターンを1減らす
         deck.getBuffState().tickCostReductionTurn();
+        // ロジック「好印象強化」・アノマリー「熱意」の残ターンを1減らす
+        deck.getBuffState().tickImpressionBoostTurn();
+        deck.getBuffState().tickEnthusiasmTurn();
 
         // 山札から新たに3枚ドロー
         drawCards(deck, HAND_SIZE);
         deck.setSelectedIndex(0);
+    }
+
+    /** 「眠気を山札のランダムな位置に生成」：トラブルカードを山札のランダムな位置へ挿入する */
+    public static void insertTroubleCard(IDeckData deck, ResourceLocation troubleCardId) {
+        List<ResourceLocation> pile = deck.getDrawPile();
+        int index = pile.isEmpty() ? 0 : (int) (Math.random() * (pile.size() + 1));
+        pile.add(index, troubleCardId);
+    }
+
+    /** 除外以外（山札・手札・捨て札）に存在するトラブルカードの枚数を数える */
+    public static long countTroubleCardsOutsideExclusion(IDeckData deck) {
+        long count = 0;
+        for (List<ResourceLocation> pile : List.of(deck.getDrawPile(), deck.getHand(), deck.getDiscardPile())) {
+            for (ResourceLocation id : pile) {
+                if (CardRegistry.get(id).map(CardDefinition::isTrouble).orElse(false)) count++;
+            }
+        }
+        return count;
     }
 
     public static void changeSelection(IDeckData deck, int delta) {

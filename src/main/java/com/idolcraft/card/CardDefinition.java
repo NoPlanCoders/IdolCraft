@@ -32,6 +32,12 @@ public class CardDefinition {
     /** 使用条件を満たしていない時にプレイヤーへ表示する説明文（ツールチップ・エラーメッセージ両方で使う） */
     private final String usabilityHint;
     private final CardEffect effect;
+    /** 所属プラン。デッキ編成はプラン単位で行う（フリーは全プラン共通） */
+    private final CardPlan plan;
+    /** アクティブ／メンタル区分。カード種別を条件にするパッシブ効果の判定に使う */
+    private final CardCategory category;
+    /** トラブルカード（「眠気」等）かどうか。true の場合、パック抽選・作業台の習得候補には出さない */
+    private final boolean trouble;
 
     private CardDefinition(Builder b) {
         this.id = b.id;
@@ -46,6 +52,9 @@ public class CardDefinition {
         this.usability = b.usability;
         this.usabilityHint = b.usabilityHint;
         this.effect = b.effect;
+        this.plan = b.plan;
+        this.category = b.category;
+        this.trouble = b.trouble;
     }
 
     public ResourceLocation getId() { return id; }
@@ -61,6 +70,9 @@ public class CardDefinition {
     public CardUsability getUsability() { return usability; }
     public String getUsabilityHint() { return usabilityHint; }
     public CardEffect getEffect() { return effect; }
+    public CardPlan getPlan() { return plan; }
+    public CardCategory getCategory() { return category; }
+    public boolean isTrouble() { return trouble; }
 
     public static Builder builder(ResourceLocation id, String displayName, CardType type) {
         return new Builder(id, displayName, type);
@@ -80,6 +92,10 @@ public class CardDefinition {
         private CardUsability usability = CardUsability.ALWAYS;
         private String usabilityHint = "";
         private CardEffect effect = (player, deck) -> {};
+        /** 未指定時はセンス扱い（既存カード群は全てセンスのため、明示指定を省略できるようにしている） */
+        private CardPlan plan = CardPlan.SENSE;
+        private CardCategory category = CardCategory.ACTIVE;
+        private boolean trouble = false;
 
         public Builder(ResourceLocation id, String displayName, CardType type) {
             this.id = id;
@@ -96,6 +112,9 @@ public class CardDefinition {
         /** hint: 「集中3以上が必要」のような、条件未達時にプレイヤーへ表示する短い説明文 */
         public Builder usableWhen(CardUsability usability, String hint) { this.usability = usability; this.usabilityHint = hint; return this; }
         public Builder effect(CardEffect effect) { this.effect = effect; return this; }
+        public Builder plan(CardPlan plan) { this.plan = plan; return this; }
+        public Builder category(CardCategory category) { this.category = category; return this; }
+        public Builder trouble(boolean trouble) { this.trouble = trouble; return this; }
 
         public CardDefinition build() {
             return new CardDefinition(this);

@@ -59,7 +59,9 @@ public class CardWorkshopScreen extends Screen {
     protected void init() {
         super.init();
         cards.clear();
-        cards.addAll(CardRegistry.all());
+        for (CardDefinition def : CardRegistry.all()) {
+            if (!def.isTrouble()) cards.add(def);
+        }
         cards.sort(Comparator
                 .comparingInt((CardDefinition d) -> CardCatalog.rarityOf(d.getId()).ordinal())
                 .thenComparingInt(CardDefinition::getRequiredPLevel)

@@ -1,6 +1,7 @@
 package com.idolcraft.client.gui;
 
 import com.idolcraft.card.CardDefinition;
+import com.idolcraft.card.CardPlan;
 import com.idolcraft.card.CardRegistry;
 import com.idolcraft.card.CardType;
 import com.idolcraft.capability.DeckCapability;
@@ -65,6 +66,11 @@ public class DeckEditorScreen extends Screen {
 
     private final List<ResourceLocation> availableCards = new ArrayList<>();
     private final List<ResourceLocation> deckCards = new ArrayList<>();
+    private final List<ResourceLocation> ownedCardsAll = new ArrayList<>();
+
+    private static final CardPlan[] SELECTABLE_PLANS = { CardPlan.SENSE, CardPlan.LOGIC, CardPlan.ANOMALY };
+    private CardPlan selectedPlan = CardPlan.SENSE;
+    private final List<int[]> planTabBounds = new ArrayList<>(); // {x0, y0, x1, y1} per SELECTABLE_PLANS index
 
     private int scrollLeft = 0;
     private int scrollRight = 0;
@@ -90,13 +96,18 @@ public class DeckEditorScreen extends Screen {
     protected void init() {
         super.init();
         // 習得済み（入手済み）カードのみ編成に使える
-        availableCards.clear();
-        availableCards.addAll(com.idolcraft.client.ClientDeckState.getOwnedCards());
+        ownedCardsAll.clear();
+        ownedCardsAll.addAll(com.idolcraft.client.ClientDeckState.getOwnedCards());
 
         deckCards.clear();
         if (this.minecraft.player != null) {
             this.minecraft.player.getCapability(DeckCapability.DECK_DATA)
                     .ifPresent(deck -> deckCards.addAll(deck.getMasterCardList()));
+        }
+        // 既存デッキの構成から、現在編成中のプランを推定する（フリー以外の最初のカードのプランを採用）
+        for (ResourceLocation id : deckCards) {
+            CardPlan p = CardRegistry.get(id).map(CardDefinition::getPlan).orElse(CardPlan.FREE);
+            if (p != CardPlan.FREE) { selectedPlan = p; break; }
         }
 
         this.panelX = (this.width - PANEL_W) / 2;
@@ -107,6 +118,17 @@ public class DeckEditorScreen extends Screen {
         this.rightGridX = leftGridX + GRID_COLS * SLOT_SIZE + 24;
         this.gridY = panelY + 92;
         this.gridHeight = GRID_ROWS * SLOT_SIZE;
+
+        // ── プランタブ（センス/ロジック/アノマリー）── カード一覧ラベルの位置に並べる
+        planTabBounds.clear();
+        int tabY0 = panelY + 60, tabY1 = panelY + 71;
+        int tx = leftGridX;
+        for (CardPlan p : SELECTABLE_PLANS) {
+            int tw = this.font.width(p.getLabel()) + 10;
+            planTabBounds.add(new int[]{tx, tabY0, tx + tw, tabY1});
+            tx += tw + 4;
+        }
+        applyPlanFilter();
 
         int btnY = panelY + PANEL_H - 40;
         int cx = panelX + PANEL_W / 2;
@@ -122,6 +144,28 @@ public class DeckEditorScreen extends Screen {
     }
 
     private void resetDeck() { deckCards.clear(); scrollRight = 0; }
+
+    /** 選択中プラン（フリー含む）に合致する所持カードだけを一覧に出す */
+    private void applyPlanFilter() {
+        availableCards.clear();
+        for (ResourceLocation id : ownedCardsAll) {
+            CardPlan p = CardRegistry.get(id).map(CardDefinition::getPlan).orElse(CardPlan.FREE);
+            if (p.isCompatibleWith(selectedPlan)) availableCards.add(id);
+        }
+        scrollLeft = 0;
+    }
+
+    /** プランタブ切り替え：デッキ内の非互換カード（別プラン専用カード）は自動的に外す */
+    private void selectPlan(CardPlan plan) {
+        if (plan == selectedPlan) return;
+        selectedPlan = plan;
+        applyPlanFilter();
+        deckCards.removeIf(id -> {
+            CardPlan p = CardRegistry.get(id).map(CardDefinition::getPlan).orElse(CardPlan.FREE);
+            return !p.isCompatibleWith(selectedPlan);
+        });
+        scrollRight = 0;
+    }
 
     private void confirmDeck() {
         NetworkHandler.CHANNEL.sendToServer(new SetDeckPacket(new ArrayList<>(deckCards)));
@@ -146,12 +190,23 @@ public class DeckEditorScreen extends Screen {
         blitTex(graphics, TEX_HEADER, hx, hy, HEADER_W, HEADER_H, TEXSIZE_HEADER_W, TEXSIZE_HEADER_H);
         graphics.drawCenteredString(this.font, "デッキ編成", panelX + PANEL_W / 2, hy + HEADER_H / 2 - 5, COLOR_TITLE);
 
+        // ── プランタブ ──
+        for (int i = 0; i < SELECTABLE_PLANS.length; i++) {
+            CardPlan p = SELECTABLE_PLANS[i];
+            int[] b = planTabBounds.get(i);
+            boolean active = p == selectedPlan;
+            boolean hovTab = mouseX >= b[0] && mouseX < b[2] && mouseY >= b[1] && mouseY < b[3];
+            graphics.fill(b[0], b[1], b[2], b[3], active ? COLOR_PINK : (hovTab ? COLOR_DIVIDER : 0x00000000));
+            graphics.drawString(this.font, p.getLabel(), b[0] + 5, b[1] + 2,
+                    active ? 0xFFFFFFFF : COLOR_LABEL, false);
+        }
+
         // ── セクションラベル ──
         graphics.drawString(this.font, "カード一覧 (" + availableCards.size() + ")",
-                leftGridX, panelY + 70, COLOR_LABEL, false);
+                leftGridX, panelY + 76, COLOR_CAPTION, false);
         String dLabel = "デッキ (" + deckCards.size() + "/" + MAX_DECK_SIZE + ")";
         int dw = this.font.width(dLabel);
-        graphics.drawString(this.font, dLabel, rightGridX + GRID_COLS * SLOT_SIZE - dw, panelY + 70, COLOR_LABEL, false);
+        graphics.drawString(this.font, dLabel, rightGridX + GRID_COLS * SLOT_SIZE - dw, panelY + 76, COLOR_CAPTION, false);
 
         // ── CMY装飾ディバイダ ──
         int divX = leftGridX + GRID_COLS * SLOT_SIZE + 12;
@@ -295,6 +350,13 @@ public class DeckEditorScreen extends Screen {
         if (btn == 0) {
             for (PillButton b : buttons) {
                 if (b.isHovered(mx, my)) { b.action().run(); return true; }
+            }
+            for (int i = 0; i < planTabBounds.size(); i++) {
+                int[] b = planTabBounds.get(i);
+                if (mx >= b[0] && mx < b[2] && my >= b[1] && my < b[3]) {
+                    selectPlan(SELECTABLE_PLANS[i]);
+                    return true;
+                }
             }
             ResourceLocation ca = pickFromGrid(mx, my, leftGridX,  availableCards, scrollLeft);
             if (ca != null) {
